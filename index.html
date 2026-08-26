@@ -187,6 +187,9 @@
     padding:4px 8px;
     border-radius:6px;
     white-space:nowrap;
+    /* warna default untuk kategori baru yang belum dikenal, ditimpa oleh kelas khusus di bawah */
+    background:#E3E7EE;
+    color:var(--ink-soft);
   }
 
   .tag.jenis-section-head{ background:var(--amber-soft); color:#8C6A17; }
@@ -194,6 +197,7 @@
   .tag.jenis-scheduling{ background:var(--teal-soft); color:var(--teal); }
   .tag.jenis-registration{ background:var(--clay-soft); color:var(--clay); }
 
+  .swatch{ background:var(--ink-soft); }
   .swatch-color-section-head{ background:#C6922B; }
   .swatch-color-allocation{ background:#C6922B; }
   .swatch-color-scheduling{ background:var(--teal); }
@@ -256,6 +260,8 @@
     padding:5px 10px;
     border-radius:6px;
     margin-bottom:16px;
+    background:#E3E7EE;
+    color:var(--ink-soft);
   }
 
   .detail-name{
@@ -413,7 +419,22 @@
   ];
 
   let DATA = FALLBACK_DATA;
-  const CATEGORY_ORDER = ["Section Head", "Allocation", "Scheduling", "Registration"];
+  // Urutan tampil untuk kategori yang sudah dikenal. Kategori baru di kolom "Jenis"
+  // yang belum ada di daftar ini akan tetap otomatis muncul, ditambahkan di urutan
+  // paling akhir (lihat getCategoryOrder()).
+  const PREFERRED_CATEGORY_ORDER = ["Section Head", "Allocation", "Scheduling", "Registration"];
+
+  function getCategoryOrder(){
+    const seen = new Set();
+    const ordered = [];
+    PREFERRED_CATEGORY_ORDER.forEach(cat => {
+      if(DATA.some(p => p.jenis === cat)){ ordered.push(cat); seen.add(cat); }
+    });
+    DATA.forEach(p => {
+      if(p.jenis && !seen.has(p.jenis)){ ordered.push(p.jenis); seen.add(p.jenis); }
+    });
+    return ordered;
+  }
 
   // ---- Parser CSV sederhana (menangani koma di dalam tanda kutip) ----
   function parseCSV(text){
@@ -519,7 +540,7 @@
     const root = document.getElementById('roster-root');
     root.innerHTML = '';
 
-    CATEGORY_ORDER.forEach(cat => {
+    getCategoryOrder().forEach(cat => {
       const people = DATA.filter(p => p.jenis === cat);
       if(people.length === 0) return;
 
