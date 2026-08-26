@@ -397,7 +397,10 @@
   const SHEET_ID = "1l6ZYSZA-lv3VrEFM8zMVWG_HPRf8uLmsAeimEf_sf9s";
   // Ganti GID ini kalau data ada di tab/sheet lain (lihat angka setelah #gid= di URL saat tab itu dibuka)
   const SHEET_GID = "0";
-  const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
+  // Endpoint utama: mempertahankan baris baru (Alt+Enter) di dalam sel.
+  const SHEET_CSV_URL_PRIMARY = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+  // Endpoint cadangan: dipakai kalau endpoint utama gagal diakses (mis. dibatasi CORS).
+  const SHEET_CSV_URL_SECONDARY = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
 
   // Data cadangan (dipakai HANYA kalau gagal mengambil data terbaru dari Sheets,
   // misalnya sedang offline atau sheet tidak bisa diakses)
@@ -508,19 +511,32 @@
     el.innerHTML = `<span class="dot2"></span>${text}`;
   }
 
+  async function fetchSheetCSV(url){
+    const res = await fetch(url, { cache: 'no-store' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const csvText = await res.text();
+    const rows = parseCSV(csvText);
+    const parsed = rowsToData(rows);
+    if(parsed.length === 0) throw new Error('Data kosong');
+    return parsed;
+  }
+
   async function loadFromSheet(){
     try{
-      const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      const csvText = await res.text();
-      const rows = parseCSV(csvText);
-      const parsed = rowsToData(rows);
-      if(parsed.length === 0) throw new Error('Data kosong');
-
-      DATA = parsed;
+      DATA = await fetchSheetCSV(SHEET_CSV_URL_PRIMARY);
       renderRoster();
       const now = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
       setSyncStatus('ok', `Tersinkron dari Google Sheets · ${now}`);
+      return;
+    } catch(primaryErr){
+      console.warn('Endpoint utama gagal, mencoba endpoint cadangan.', primaryErr);
+    }
+
+    try{
+      DATA = await fetchSheetCSV(SHEET_CSV_URL_SECONDARY);
+      renderRoster();
+      const now = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+      setSyncStatus('ok', `Tersinkron dari Google Sheets · ${now} (mode cadangan)`);
     } catch(err){
       console.warn('Gagal memuat dari Google Sheets, memakai data cadangan.', err);
       DATA = FALLBACK_DATA;
