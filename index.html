@@ -277,6 +277,16 @@
     margin-bottom:8px;
   }
 
+  .pic-name{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:19px;
+    color:var(--ink);
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:20px;
+  }
+
   .jobdesk{
     font-size:15.5px;
     line-height:1.65;
@@ -364,7 +374,9 @@
       <div class="detail-card">
         <span class="detail-tag" id="detail-tag"></span>
         <h2 class="detail-name" id="detail-name"></h2>
-        <div class="field-label">Jobdesk</div>
+        <div class="field-label">Nama PIC</div>
+        <div class="pic-name" id="detail-pic-name"></div>
+        <div class="field-label">Description</div>
         <div class="jobdesk" id="detail-jobdesk"></div>
         <button class="send-email" id="send-email-btn">✉ &nbsp;Send Email</button>
         <div class="email-note" id="email-note"></div>
@@ -383,21 +395,21 @@
   // Data cadangan (dipakai HANYA kalau gagal mengambil data terbaru dari Sheets,
   // misalnya sedang offline atau sheet tidak bisa diakses)
   const FALLBACK_DATA = [
-    { jenis:"Section Head", name:"Thika",   email:"",                                 tugas:"" },
-    { jenis:"Allocation",   name:"Meydina", email:"meydina.rizqi@binus.edu",           tugas:"Validasi penjadwalan, Inbound Student, settingan BCS (KRSS, KRS, streaming, minor, elective), Penjadwalan FYP" },
-    { jenis:"Scheduling",   name:"Kokom",   email:"kkomalasari@binus.edu",             tugas:"BBSUP2 (IBM, IBM GC, BC, Business Management)" },
-    { jenis:"Scheduling",   name:"Dian",    email:"mardiana.srsc@binus.edu",           tugas:"All F.ENG (BioTech, FoodTech, Architecture, T.Sipil, T.Industri, Sistem Komputer) + CB + Indonesia" },
-    { jenis:"Scheduling",   name:"Flo",     email:"penjadwalansidanka@binus.edu",      tugas:"All SIS (Information System, ISA, AIS, BIT, Business Analytics, dan SIMN, SIAK, SI RPL KEMENKEU) + DD" },
-    { jenis:"Scheduling",   name:"Ganesha", email:"penjadwalanmc@binus.edu",           tugas:"All FDCHT (Marcomm, Masscomm, Creative Communication, HM, BHM, Tourism) dan All SOA (Accounting, Taxation, Finance)" },
-    { jenis:"Scheduling",   name:"Gerry",   email:"penjadwalanekonomi@binus.edu",      tugas:"BBSUP1 (Management, Management MT, GBM) + BEC + Enrichment" },
-    { jenis:"Scheduling",   name:"Kevin",   email:"penjadwalantidansk@binus.edu",      tugas:"SOCS (CSP, Master Track CS, CS Global)" },
-    { jenis:"Scheduling",   name:"Mega",    email:"penjadwalansastra@binus.edu",       tugas:"All FHUM (Chinese, Japanese, English, PGSD, Business Law, Psychology) + DLLC" },
-    { jenis:"Scheduling",   name:"Rafli",   email:"muhammad.ibrahim@binus.edu",        tugas:"All SOD (New Media, Animation, Creative Advertising, Interior Design, Film + Fashion) + Binus Festival" },
-    { jenis:"Scheduling",   name:"Adi",     email:"penjadwalanmathstat@binus.edu",     tugas:"SOCS Non CSP (Mathematics dan Statistics, Data Science, GAT, MAT, AI, Cyber, SE) + Koordinasi tim permohonan" },
-    { jenis:"Registration", name:"Yola",    email:"yola.kristi@binus.edu",             tugas:"Registrasi Enrichment" },
-    { jenis:"Registration", name:"Wulan",   email:"lyn_mhs04@binus.edu",               tugas:"Permohonan BBS, FET dan SOD" },
-    { jenis:"Registration", name:"Alief",   email:"lyn_mhs09@binus.edu",               tugas:"Permohonan FHUM dan SIS" },
-    { jenis:"Registration", name:"Virna",   email:"lyn_mhs08@binus.edu",               tugas:"Permohonan SOCS, SOA dan FDCHT" },
+    { jenis:"Section Head", title:"",                                                                     email:"",                                 picName:"Thika",   description:"" },
+    { jenis:"Allocation",   title:"",                                                                     email:"meydina.rizqi@binus.edu",           picName:"Meydina", description:"Validasi penjadwalan, Inbound Student, settingan BCS (KRSS, KRS, streaming, minor, elective), Penjadwalan FYP" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"kkomalasari@binus.edu",             picName:"Kokom",   description:"BBSUP2 (IBM, IBM GC, BC, Business Management)" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"mardiana.srsc@binus.edu",           picName:"Dian",    description:"All F.ENG (BioTech, FoodTech, Architecture, T.Sipil, T.Industri, Sistem Komputer) + CB + Indonesia" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalansidanka@binus.edu",      picName:"Flo",     description:"All SIS (Information System, ISA, AIS, BIT, Business Analytics, dan SIMN, SIAK, SI RPL KEMENKEU) + DD" },
+    { jenis:"Scheduling",   title:"Faculty of Digital Communication and Hotel & Tourism @Greater Jakarta + School of Accounting", email:"penjadwalanmc@binus.edu",           picName:"Ganesha", description:"All FDCHT (Marcomm, Masscomm, Creative Communication, HM, BHM, Tourism) dan All SOA (Accounting, Taxation, Finance)" },
+    { jenis:"Scheduling",   title:"BBS Undergraduate 1 + Binus Entrepreneurship Center + Enrichment Program", email:"penjadwalanekonomi@binus.edu",      picName:"Gerry",   description:"BBSUP1 (Management, Management MT, GBM) + BEC + Enrichment" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalantidansk@binus.edu",      picName:"Kevin",   description:"SOCS (CSP, Master Track CS, CS Global)" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalansastra@binus.edu",       picName:"Mega",    description:"All FHUM (Chinese, Japanese, English, PGSD, Business Law, Psychology) + DLLC" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"muhammad.ibrahim@binus.edu",        picName:"Rafli",   description:"All SOD (New Media, Animation, Creative Advertising, Interior Design, Film + Fashion) + Binus Festival" },
+    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalanmathstat@binus.edu",     picName:"Adi",     description:"SOCS Non CSP (Mathematics dan Statistics, Data Science, GAT, MAT, AI, Cyber, SE) + Koordinasi tim permohonan" },
+    { jenis:"Registration", title:"",                                                                     email:"yola.kristi@binus.edu",             picName:"Yola",    description:"Registrasi Enrichment" },
+    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs04@binus.edu",               picName:"Wulan",   description:"Permohonan BBS, FET dan SOD" },
+    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs09@binus.edu",               picName:"Alief",   description:"Permohonan FHUM dan SIS" },
+    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs08@binus.edu",               picName:"Virna",   description:"Permohonan SOCS, SOA dan FDCHT" },
   ];
 
   let DATA = FALLBACK_DATA;
@@ -427,17 +439,45 @@
     return rows.filter(r => r.some(cell => cell.trim() !== ''));
   }
 
-  // Kolom di sheet: Jenis | PIC Name | Email | Tugas Pekerjaan
+  // Kolom di sheet (nama header dicocokkan otomatis, urutan kolom boleh berubah):
+  // Jenis | PIC Task | Email | PIC | Task Description
+  const COLUMN_ALIASES = {
+    jenis:       ['jenis'],
+    title:       ['pic task', 'task', 'faculty'],
+    email:       ['email'],
+    picName:     ['pic', 'pic name', 'nama pic'],
+    description: ['task description', 'description', 'tugas pekerjaan', 'jobdesk'],
+  };
+
+  function findColumnIndex(headerRow, aliases){
+    const normalized = headerRow.map(h => (h || '').trim().toLowerCase());
+    for(const alias of aliases){
+      const idx = normalized.indexOf(alias);
+      if(idx !== -1) return idx;
+    }
+    return -1;
+  }
+
   function rowsToData(rows){
-    const body = rows.slice(1); // buang baris header
+    const headerRow = rows[0] || [];
+    const body = rows.slice(1);
+
+    const colIdx = {};
+    for(const key in COLUMN_ALIASES){
+      colIdx[key] = findColumnIndex(headerRow, COLUMN_ALIASES[key]);
+    }
+
+    const get = (r, key) => colIdx[key] === -1 ? '' : (r[colIdx[key]] || '').trim();
+
     return body
       .map(r => ({
-        jenis: (r[0] || '').trim(),
-        name:  (r[1] || '').trim(),
-        email: (r[2] || '').trim(),
-        tugas: (r[3] || '').trim(),
+        jenis:       get(r, 'jenis'),
+        title:       get(r, 'title'),
+        email:       get(r, 'email'),
+        picName:     get(r, 'picName'),
+        description: get(r, 'description'),
       }))
-      .filter(p => p.name !== '');
+      .filter(p => p.picName !== '');
   }
 
   function setSyncStatus(state, text){
@@ -500,10 +540,10 @@
       people.forEach(p => {
         const card = document.createElement('button');
         card.className = 'pic-card';
-        card.setAttribute('aria-label', `Lihat detail ${p.name}`);
+        card.setAttribute('aria-label', `Lihat detail ${p.picName}`);
         card.innerHTML = `
           <span class="tag ${tagClass(p.jenis)}">${p.jenis}</span>
-          <span class="name">${p.name}</span>
+          <span class="name">${p.picName}</span>
           <span class="chev">→</span>
         `;
         card.addEventListener('click', () => showDetail(p));
@@ -518,14 +558,19 @@
   function showDetail(person){
     document.getElementById('detail-tag').textContent = person.jenis;
     document.getElementById('detail-tag').className = 'detail-tag ' + tagClass(person.jenis);
-    document.getElementById('detail-name').textContent = person.name;
+
+    // Judul besar: pakai PIC Task kalau ada, kalau kosong jatuhkan ke Nama PIC
+    document.getElementById('detail-name').textContent =
+      (person.title && person.title.trim() !== '') ? person.title : person.picName;
+
+    document.getElementById('detail-pic-name').textContent = person.picName;
 
     const jobdeskEl = document.getElementById('detail-jobdesk');
-    if(person.tugas && person.tugas.trim() !== ''){
-      jobdeskEl.textContent = person.tugas;
+    if(person.description && person.description.trim() !== ''){
+      jobdeskEl.textContent = person.description;
       jobdeskEl.classList.remove('empty');
     } else {
-      jobdeskEl.textContent = 'Belum ada jobdesk tercantum untuk PIC ini.';
+      jobdeskEl.textContent = 'Belum ada description tercantum untuk PIC ini.';
       jobdeskEl.classList.add('empty');
     }
 
@@ -546,7 +591,7 @@
     document.getElementById('list-screen').hidden = true;
     document.getElementById('detail-screen').hidden = false;
     window.scrollTo(0,0);
-    history.pushState({view:'detail', name:person.name}, '', '#' + slugify(person.name));
+    history.pushState({view:'detail', name:person.picName}, '', '#' + slugify(person.picName));
   }
 
   function showList(){
@@ -562,7 +607,7 @@
 
   window.addEventListener('popstate', (e) => {
     if(e.state && e.state.view === 'detail'){
-      const person = DATA.find(p => slugify(p.name) === e.state.name ? true : slugify(p.name) === slugify(e.state.name));
+      const person = DATA.find(p => slugify(p.picName) === slugify(e.state.name));
       if(person) showDetail(person); else showList();
     } else {
       showList();
@@ -576,7 +621,7 @@
     // Deep-link support: buka langsung ke detail seseorang lewat #slug-nama
     const initialHash = window.location.hash.replace('#','');
     if(initialHash){
-      const person = DATA.find(p => slugify(p.name) === initialHash);
+      const person = DATA.find(p => slugify(p.picName) === initialHash);
       if(person) showDetail(person);
     }
   });
