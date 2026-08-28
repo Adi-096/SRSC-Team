@@ -189,6 +189,10 @@
   .icon-btn:hover{ transform:translateY(-1px); }
   .icon-btn.icon-email:hover{ background:var(--primary); border-color:var(--primary); color:#fff; }
   .icon-btn.icon-wa:hover{ background:#25D366; border-color:#25D366; color:#fff; }
+  .no-contact{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-faint);
+    padding:0 6px;flex:none;
+  }
 
   /* modal */
   .modal-overlay{
@@ -456,12 +460,13 @@ function buildSection(idx, sheetKey, header, subheader, members){
     const waBtn = waDigits
       ? `<a class="icon-btn icon-wa" href="https://wa.me/${waDigits}" target="_blank" rel="noopener" title="WhatsApp: ${escapeHtml(m.whatsapp)}" aria-label="Chat WhatsApp ${escapeHtml(m.whatsapp)}">${WA_SVG}</a>`
       : "";
+    const actionsHtml = (emailBtn || waBtn) ? `${emailBtn}${waBtn}` : `<span class="no-contact">—</span>`;
     return `
     <li>
       <div class="task-link">
         <span class="idx">${String(i+1).padStart(2,"0")}</span>
         <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
-        <span class="actions">${emailBtn}${waBtn}</span>
+        <span class="actions">${actionsHtml}</span>
       </div>
     </li>`;
   }).join("");
