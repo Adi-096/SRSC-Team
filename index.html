@@ -3,667 +3,523 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Course Registration &amp; Scheduling Team — SRSC</title>
+<title>Direktori Tim — SRSC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#152238;
-    --ink-soft:#3d4a63;
-    --paper:#EEF1F5;
-    --paper-raised:#FFFFFF;
-    --line:#CBD2DC;
-    --amber:#C6922B;
-    --amber-soft:#F3E6C8;
-    --teal:#2E6B67;
-    --teal-soft:#DCE9E7;
-    --clay:#AD5230;
-    --clay-soft:#EFDCD2;
-    --shadow: 0 1px 2px rgba(21,34,56,0.06), 0 8px 24px -12px rgba(21,34,56,0.18);
+    --ink:#0F1A2B;
+    --ink-2:#16233A;
+    --paper:#FBF6EA;
+    --paper-dim:#F0E8D6;
+    --gold:#C99A3E;
+    --gold-soft:#E4C583;
+    --teal:#2F6B63;
+    --line: rgba(16,25,43,0.16);
+    --cream-soft: rgba(251,246,234,0.62);
+    --cream-faint: rgba(251,246,234,0.38);
+    --radius: 3px;
   }
-
-  *{ box-sizing:border-box; }
-
-  html{ -webkit-font-smoothing:antialiased; }
-
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
   body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,154,62,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(47,107,99,0.14), transparent 55%),
+      var(--ink);
+    color: var(--paper);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
+  .wrap{max-width:920px;margin:0 auto;padding:56px 24px 120px;}
 
-  a{ color:inherit; text-decoration:none; }
-
-  button{ font-family:inherit; cursor:pointer; }
-
-  /* ---------- Header / grid motif ---------- */
-  .grid-header{
-    position:relative;
-    padding:56px 20px 40px;
-    overflow:hidden;
-    background:
-      repeating-linear-gradient(90deg, rgba(21,34,56,0.055) 0, rgba(21,34,56,0.055) 1px, transparent 1px, transparent 64px),
-      repeating-linear-gradient(0deg, rgba(21,34,56,0.055) 0, rgba(21,34,56,0.055) 1px, transparent 1px, transparent 32px);
+  /* masthead */
+  .masthead{
+    display:flex;align-items:baseline;justify-content:space-between;
     border-bottom:1px solid var(--line);
+    padding-bottom:18px;margin-bottom:64px;
+    flex-wrap:wrap;gap:8px;
+  }
+  .masthead .brand{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold-soft);
+  }
+  .masthead .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--cream-faint);letter-spacing:.05em;
   }
 
-  .grid-header::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:linear-gradient(180deg, rgba(238,241,245,0) 0%, var(--paper) 96%);
-    pointer-events:none;
+  /* status / error messages */
+  .notice{
+    font-family:'Work Sans',sans-serif;
+    background:var(--paper);color:var(--ink);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;margin-bottom:28px;
+    font-size:14px;line-height:1.6;
   }
+  .notice.error{ border-left:4px solid #B84C3A; }
+  .notice.loading{ border-left:4px solid var(--teal); }
+  .notice code{
+    background:var(--paper-dim);padding:1px 6px;border-radius:2px;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+  }
+  .notice ul{margin:10px 0 0;padding-left:18px;}
+  .notice li{margin-bottom:4px;}
 
-  .header-inner{
+  /* section */
+  .section{
     position:relative;
-    max-width:640px;
-    margin:0 auto;
-    text-align:left;
+    padding:44px 0 52px;
+    border-bottom:1px dashed var(--line);
   }
+  .section:last-of-type{border-bottom:none;}
 
-  .eyebrow{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    color:var(--teal);
-    background:var(--teal-soft);
-    padding:6px 10px;
-    border-radius:100px;
+  .stamp{
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.14em;
+    color:var(--gold-soft);
+    border:1px dashed var(--gold);
+    border-radius:50%;
+    width:58px;height:58px;
+    transform:rotate(-6deg);
     margin-bottom:18px;
+    text-align:center;
+    padding:4px;
   }
 
-  .eyebrow .dot{
-    width:6px; height:6px; border-radius:50%;
-    background:var(--teal);
-  }
-
-  h1{
-    font-family:'Fraunces', serif;
+  h2.header{
+    font-family:'Fraunces',serif;
     font-weight:600;
-    font-size:clamp(30px, 5vw, 42px);
+    font-size:clamp(28px,4.4vw,42px);
     line-height:1.08;
-    margin:0 0 12px;
-    letter-spacing:-0.01em;
-  }
-
-  .lede{
-    font-size:15px;
-    line-height:1.55;
-    color:var(--ink-soft);
-    max-width:46ch;
-    margin:0;
-  }
-
-  .sync-status{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    color:var(--ink-soft);
-    opacity:0.7;
-    margin:14px 0 0;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .sync-status.ok .dot2{ background:var(--teal); }
-  .sync-status.err .dot2{ background:var(--clay); }
-  .sync-status .dot2{
-    width:6px; height:6px; border-radius:50%;
-    background:var(--ink-soft);
-    flex:0 0 auto;
-  }
-
-  /* ---------- List view ---------- */
-  main{
-    max-width:640px;
-    margin:0 auto;
-    padding:36px 20px 80px;
-  }
-
-  .section-block + .section-block{ margin-top:34px; }
-
-  .section-label{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:12px;
-  }
-
-  .section-label .swatch{
-    width:9px; height:9px; border-radius:2px;
-  }
-
-  .section-label .count{
-    color:var(--ink-soft);
-    opacity:0.55;
-  }
-
-  .roster{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
-  .pic-card{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:14px 16px;
-    box-shadow:var(--shadow);
-    transition:transform .15s ease, border-color .15s ease;
-  }
-
-  .pic-card:hover{
-    transform:translateY(-1px);
-    border-color:var(--ink);
-  }
-
-  .pic-card:focus-visible{
-    outline:2px solid var(--ink);
-    outline-offset:2px;
-  }
-
-  .pic-card .tag{
-    flex:0 0 auto;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.05em;
-    text-transform:uppercase;
-    padding:4px 8px;
-    border-radius:6px;
-    white-space:nowrap;
-    /* warna default untuk kategori baru yang belum dikenal, ditimpa oleh kelas khusus di bawah */
-    background:#E3E7EE;
-    color:var(--ink-soft);
-  }
-
-  .tag.jenis-section-head{ background:var(--amber-soft); color:#8C6A17; }
-  .tag.jenis-allocation{ background:var(--amber-soft); color:#8C6A17; }
-  .tag.jenis-scheduling{ background:var(--teal-soft); color:var(--teal); }
-  .tag.jenis-registration{ background:var(--clay-soft); color:var(--clay); }
-
-  .swatch{ background:var(--ink-soft); }
-  .swatch-color-section-head{ background:#C6922B; }
-  .swatch-color-allocation{ background:#C6922B; }
-  .swatch-color-scheduling{ background:var(--teal); }
-  .swatch-color-registration{ background:var(--clay); }
-
-  .pic-card .name{
-    flex:1 1 auto;
-    font-family:'Fraunces', serif;
-    font-weight:500;
-    font-size:18px;
-    letter-spacing:-0.01em;
-  }
-
-  .pic-card .chev{
-    flex:0 0 auto;
-    color:var(--ink-soft);
-    opacity:0.5;
-    font-size:18px;
-    transition:transform .15s ease;
-  }
-
-  .pic-card:hover .chev{ transform:translateX(3px); opacity:0.9; }
-
-  /* ---------- Detail view ---------- */
-  .detail-view{
-    max-width:560px;
-    margin:0 auto;
-    padding:28px 20px 80px;
-  }
-
-  .back-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    letter-spacing:0.03em;
-    color:var(--ink-soft);
-    background:none;
-    border:none;
-    padding:8px 0;
-    margin-bottom:22px;
-  }
-  .back-btn:hover{ color:var(--ink); }
-
-  .detail-card{
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:20px;
-    padding:32px 28px;
-    box-shadow:var(--shadow);
-  }
-
-  .detail-tag{
-    display:inline-block;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    padding:5px 10px;
-    border-radius:6px;
-    margin-bottom:16px;
-    background:#E3E7EE;
-    color:var(--ink-soft);
-  }
-
-  .detail-name{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:clamp(28px, 6vw, 36px);
-    line-height:1.06;
-    letter-spacing:-0.01em;
-    margin:0 0 22px;
-  }
-
-  .field-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    opacity:0.65;
-    margin-bottom:8px;
-  }
-
-  .pic-name{
-    font-family:'Fraunces', serif;
-    font-weight:500;
-    font-size:19px;
-    color:var(--ink);
-    padding-bottom:22px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:20px;
-  }
-
-  .jobdesk{
-    font-size:15.5px;
-    line-height:1.65;
-    color:var(--ink);
-    padding-bottom:26px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:24px;
-    white-space:pre-line;
-  }
-
-  .jobdesk.empty{
-    color:var(--ink-soft);
-    font-style:italic;
-  }
-
-  .send-email{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:9px;
-    width:100%;
-    padding:14px 18px;
-    background:var(--ink);
+    margin:0 0 10px;
     color:var(--paper);
-    border:none;
-    border-radius:12px;
-    font-size:14.5px;
-    font-weight:600;
-    letter-spacing:0.01em;
-    transition:background .15s ease, transform .1s ease;
+  }
+  p.subheader{
+    font-family:'Work Sans',sans-serif;
+    font-size:15.5px;
+    color:var(--cream-soft);
+    max-width:56ch;
+    line-height:1.6;
+    margin:0 0 26px;
   }
 
-  .send-email:hover{ background:#243450; }
-  .send-email:active{ transform:scale(0.99); }
+  .team-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink);background:var(--gold-soft);
+    border:1px solid var(--gold-soft);
+    padding:11px 20px;border-radius:2px;
+    cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:background .15s ease, color .15s ease, transform .15s ease;
+    margin-bottom:34px;
+  }
+  .team-btn:hover{ background:transparent;color:var(--gold-soft); }
+  .team-btn:active{ transform:scale(.98); }
+  .team-btn svg{width:14px;height:14px;flex:none;}
 
-  .send-email:disabled{
-    background:var(--line);
-    color:var(--ink-soft);
-    cursor:not-allowed;
+  /* task link list */
+  .task-list{list-style:none;margin:0;padding:0;}
+  .task-list li{
+    border-top:1px solid var(--line);
+  }
+  .task-list li:last-child{border-bottom:1px solid var(--line);}
+  .task-link{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:16px 4px;
+    text-decoration:none;color:var(--paper);
+    font-family:'Work Sans',sans-serif;font-weight:500;font-size:15px;
+    transition:padding-left .15s ease, color .15s ease;
+  }
+  .task-link:hover{ padding-left:10px; color:var(--gold-soft); }
+  .task-link .idx{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cream-faint);
+    margin-right:14px;
+  }
+  .task-link .name{ flex:1; }
+  .task-link .arrow{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-faint);
+    white-space:nowrap;
   }
 
-  .email-note{
+  /* modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(15,26,43,0.72);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 18px; overflow-y:auto; z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--paper);color:var(--ink);
+    border-radius:var(--radius);
+    width:100%;max-width:900px;
+    padding:30px 26px 36px;
+    position:relative;
+  }
+  .modal-close{
+    position:absolute;top:18px;right:18px;
+    background:none;border:none;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);
+    padding:6px 10px;border:1px solid var(--line);border-radius:2px;
+  }
+  .modal-close:hover{ background:var(--paper-dim); }
+  .modal h3{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:24px;margin:0 0 4px;padding-right:60px;
+  }
+  .modal .modal-sub{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--teal);letter-spacing:.08em;text-transform:uppercase;
+    margin-bottom:26px;
+  }
+
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(198px,1fr));
+    gap:18px;
+  }
+  .card{
+    position:relative;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:20px 14px 18px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+  }
+  .card::before,.card::after{
+    content:"";position:absolute;top:10px;width:7px;height:7px;
+    border-radius:50%;background:var(--paper-dim);
+    border:1px solid var(--line);
+  }
+  .card::before{left:10px;}
+  .card::after{right:10px;}
+  .card .dp{
+    width:64px;height:64px;border-radius:50%;
+    object-fit:cover;background:var(--paper-dim);
+    border:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .card .dp.fallback{
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-size:22px;font-weight:600;
+    color:var(--teal);
+  }
+  .card hr{
+    width:100%;border:none;border-top:1px dashed var(--line);
+    margin:12px 0;
+  }
+  .card .pic-name{
+    font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;
+    color:var(--ink);
+  }
+  .card .task{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--teal);
+    line-height:1.5;
+  }
+  .card .task-desc{
+    font-family:'Work Sans',sans-serif;font-size:12.5px;color:#4A4636;
+    line-height:1.55;
+  }
+
+  footer.page-footer{
+    margin-top:60px;
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--cream-faint);letter-spacing:.05em;
     text-align:center;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-top:10px;
   }
-
-  footer{
-    max-width:640px;
-    margin:0 auto;
-    padding:0 20px 40px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--ink-soft);
-    opacity:0.6;
-    text-align:center;
-  }
-
-  [hidden]{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
-    .pic-card, .chev, .send-email{ transition:none; }
+    *{transition:none !important;}
   }
 </style>
 </head>
 <body>
 
-  <div id="list-screen">
-    <header class="grid-header">
-      <div class="header-inner">
-        <span class="eyebrow"><span class="dot"></span>SRSC — Student Registration &amp; Scheduling Center</span>
-        <h1>Course Registration &amp; Scheduling Team</h1>
-        <p class="lede">Pilih nama untuk melihat jobdesk dan kontak masing‑masing PIC.</p>
-        <p class="sync-status" id="sync-status">Memuat data terbaru dari Google Sheets…</p>
-      </div>
-    </header>
-    <main id="roster-root"></main>
-    <footer>Data Informasi Course Registration and Scheduling Team</footer>
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand">Direktori Tim — SRSC</div>
+    <div class="sub" id="masthead-sub">Course Registration &amp; Scheduling Center</div>
   </div>
 
-  <div id="detail-screen" hidden>
-    <div class="detail-view">
-      <button class="back-btn" id="back-btn">← Kembali ke daftar</button>
-      <div class="detail-card">
-        <span class="detail-tag" id="detail-tag"></span>
-        <h2 class="detail-name" id="detail-name"></h2>
-        <div class="field-label">Nama PIC</div>
-        <div class="pic-name" id="detail-pic-name"></div>
-        <div class="field-label">Description</div>
-        <div class="jobdesk" id="detail-jobdesk"></div>
-        <button class="send-email" id="send-email-btn">✉ &nbsp;Send Email</button>
-        <div class="email-note" id="email-note"></div>
-      </div>
-    </div>
+  <div id="app">
+    <div class="notice loading">Memuat data dari Google Sheet…</div>
   </div>
+
+  <footer class="page-footer">Data diambil langsung dan otomatis dari Google Sheet terkait.</footer>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">Tutup ✕</button>
+    <h3 id="modal-title"></h3>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="card-grid" id="modal-grid"></div>
+  </div>
+</div>
 
 <script>
-  // ---- Konfigurasi sumber data ----
-  // ID diambil dari URL Google Sheets: .../d/[ID_INI]/edit
-  const SHEET_ID = "1l6ZYSZA-lv3VrEFM8zMVWG_HPRf8uLmsAeimEf_sf9s";
-  // Ganti GID ini kalau data ada di tab/sheet lain (lihat angka setelah #gid= di URL saat tab itu dibuka)
-  const SHEET_GID = "0";
-  // Endpoint utama: mempertahankan baris baru (Alt+Enter) di dalam sel.
-  const SHEET_CSV_URL_PRIMARY = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
-  // Endpoint cadangan: dipakai kalau endpoint utama gagal diakses (mis. dibatasi CORS).
-  const SHEET_CSV_URL_SECONDARY = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
+/* =========================================================================
+   PENGATURAN — sesuaikan dua baris ini kalau perlu
+   ========================================================================= */
+const SPREADSHEET_ID = "1l6ZYSZA-lv3VrEFM8zMVWG_HPRf8uLmsAeimEf_sf9s";
+const MASTER_SHEET_NAME = "Master";
 
-  // Data cadangan (dipakai HANYA kalau gagal mengambil data terbaru dari Sheets,
-  // misalnya sedang offline atau sheet tidak bisa diakses)
-  const FALLBACK_DATA = [
-    { jenis:"Section Head", title:"",                                                                     email:"",                                 picName:"Thika",   description:"" },
-    { jenis:"Allocation",   title:"",                                                                     email:"meydina.rizqi@binus.edu",           picName:"Meydina", description:"Validasi penjadwalan, Inbound Student, settingan BCS (KRSS, KRS, streaming, minor, elective), Penjadwalan FYP" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"kkomalasari@binus.edu",             picName:"Kokom",   description:"BBSUP2 (IBM, IBM GC, BC, Business Management)" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"mardiana.srsc@binus.edu",           picName:"Dian",    description:"All F.ENG (BioTech, FoodTech, Architecture, T.Sipil, T.Industri, Sistem Komputer) + CB + Indonesia" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalansidanka@binus.edu",      picName:"Flo",     description:"All SIS (Information System, ISA, AIS, BIT, Business Analytics, dan SIMN, SIAK, SI RPL KEMENKEU) + DD" },
-    { jenis:"Scheduling",   title:"Faculty of Digital Communication and Hotel & Tourism @Greater Jakarta + School of Accounting", email:"penjadwalanmc@binus.edu",           picName:"Ganesha", description:"All FDCHT (Marcomm, Masscomm, Creative Communication, HM, BHM, Tourism) dan All SOA (Accounting, Taxation, Finance)" },
-    { jenis:"Scheduling",   title:"BBS Undergraduate 1 + Binus Entrepreneurship Center + Enrichment Program", email:"penjadwalanekonomi@binus.edu",      picName:"Gerry",   description:"BBSUP1 (Management, Management MT, GBM) + BEC + Enrichment" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalantidansk@binus.edu",      picName:"Kevin",   description:"SOCS (CSP, Master Track CS, CS Global)" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalansastra@binus.edu",       picName:"Mega",    description:"All FHUM (Chinese, Japanese, English, PGSD, Business Law, Psychology) + DLLC" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"muhammad.ibrahim@binus.edu",        picName:"Rafli",   description:"All SOD (New Media, Animation, Creative Advertising, Interior Design, Film + Fashion) + Binus Festival" },
-    { jenis:"Scheduling",   title:"",                                                                     email:"penjadwalanmathstat@binus.edu",     picName:"Adi",     description:"SOCS Non CSP (Mathematics dan Statistics, Data Science, GAT, MAT, AI, Cyber, SE) + Koordinasi tim permohonan" },
-    { jenis:"Registration", title:"",                                                                     email:"yola.kristi@binus.edu",             picName:"Yola",    description:"Registrasi Enrichment" },
-    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs04@binus.edu",               picName:"Wulan",   description:"Permohonan BBS, FET dan SOD" },
-    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs09@binus.edu",               picName:"Alief",   description:"Permohonan FHUM dan SIS" },
-    { jenis:"Registration", title:"",                                                                     email:"lyn_mhs08@binus.edu",               picName:"Virna",   description:"Permohonan SOCS, SOA dan FDCHT" },
-  ];
+/* =========================================================================
+   ATURAN STRUKTUR SHEET (baca ini kalau halaman menampilkan pesan error)
 
-  let DATA = FALLBACK_DATA;
-  // Urutan tampil untuk kategori yang sudah dikenal. Kategori baru di kolom "Jenis"
-  // yang belum ada di daftar ini akan tetap otomatis muncul, ditambahkan di urutan
-  // paling akhir (lihat getCategoryOrder()).
-  const PREFERRED_CATEGORY_ORDER = ["Section Head", "Allocation", "Scheduling", "Registration"];
+   Sheet "Master" (disusun PER KOLOM, bukan per baris):
+     Kolom A = label baris ("Sheet", "Judul", opsional "Sub Judul"/"Sub...").
+     Kolom B, C, D, ... = satu kolom = satu bagian/section di halaman.
+       - Baris berlabel "Sheet"  -> nama tab sheet data, harus SAMA PERSIS
+         dengan nama tab aslinya (contoh: "S1 - Greater Jakarta & Bekasi").
+       - Baris berlabel "Judul"  -> teks Header (judul besar) untuk section itu.
+       - Baris berlabel mengandung "Sub" (opsional) -> teks subHeader.
+     Kolom dengan nilai "Sheet" = "All" diperlakukan khusus: ditampilkan
+     sebagai catatan/pengumuman di paling atas halaman (bukan section tim).
 
-  function getCategoryOrder(){
-    const seen = new Set();
-    const ordered = [];
-    PREFERRED_CATEGORY_ORDER.forEach(cat => {
-      if(DATA.some(p => p.jenis === cat)){ ordered.push(cat); seen.add(cat); }
-    });
-    DATA.forEach(p => {
-      if(p.jenis && !seen.has(p.jenis)){ ordered.push(p.jenis); seen.add(p.jenis); }
-    });
-    return ordered;
-  }
+   Setiap sheet data (misal "S1 - Greater Jakarta & Bekasi"):
+     Baris pertama = judul kolom, boleh urutan bebas, dikenali dari NAMA
+     kolomnya (tidak harus persis, dicocokkan otomatis):
+       - berisi kata "jabatan" atau "posisi"      -> Jabatan / Posisi
+       - berisi kata "pic"                        -> PIC
+       - berisi kata "email"                      -> Email
+       - persis "task" (bukan "task description") -> Task
+       - berisi "task" dan "desc"                 -> Task Description
+       - berisi "display"/"picture"/"foto"/"photo"-> Display Picture (URL gambar)
+   ========================================================================= */
 
-  // ---- Parser CSV sederhana (menangani koma di dalam tanda kutip) ----
-  function parseCSV(text){
-    const rows = [];
-    let row = [], field = '', inQuotes = false;
-    for(let i = 0; i < text.length; i++){
-      const c = text[i], next = text[i+1];
-      if(inQuotes){
-        if(c === '"' && next === '"'){ field += '"'; i++; }
-        else if(c === '"'){ inQuotes = false; }
-        else { field += c; }
-      } else {
-        if(c === '"'){ inQuotes = true; }
-        else if(c === ','){ row.push(field); field = ''; }
-        else if(c === '\n' || c === '\r'){
-          if(c === '\r' && next === '\n') i++;
-          row.push(field); rows.push(row);
-          row = []; field = '';
-        } else { field += c; }
-      }
+const gvizUrl = (sheetName) =>
+  `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+
+/* ---------- CSV parser sederhana (menangani tanda kutip, koma, baris baru) ---------- */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i], next = text[i+1];
+    if (inQuotes){
+      if (c === '"' && next === '"'){ field += '"'; i++; }
+      else if (c === '"'){ inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"'){ inQuotes = true; }
+      else if (c === ','){ row.push(field); field = ""; }
+      else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === '\r'){ /* skip */ }
+      else { field += c; }
     }
-    if(field.length || row.length){ row.push(field); rows.push(row); }
-    return rows.filter(r => r.some(cell => cell.trim() !== ''));
   }
+  if (field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c && c.trim() !== ""));
+}
 
-  // Kolom di sheet (nama header dicocokkan otomatis, urutan kolom boleh berubah):
-  // Jenis | PIC Task | Email | PIC | Task Description
-  const COLUMN_ALIASES = {
-    jenis:       ['jenis'],
-    title:       ['pic task', 'task', 'faculty'],
-    email:       ['email'],
-    picName:     ['pic', 'pic name', 'nama pic'],
-    description: ['task description', 'description', 'tugas pekerjaan', 'jobdesk'],
+async function fetchSheet(sheetName){
+  const res = await fetch(gvizUrl(sheetName));
+  if (!res.ok) throw new Error(`Gagal mengambil sheet "${sheetName}" (status ${res.status})`);
+  const text = await res.text();
+  if (text.trim().startsWith("<")) {
+    throw new Error(`Sheet "${sheetName}" tidak ditemukan atau belum bisa diakses publik.`);
+  }
+  return parseCSV(text);
+}
+
+function findCol(headerRow, matchers){
+  const lower = headerRow.map(h => (h||"").toLowerCase().trim());
+  for (let i = 0; i < lower.length; i++){
+    if (matchers(lower[i])) return i;
+  }
+  return -1;
+}
+
+function detectColumns(headerRow){
+  return {
+    jabatan: findCol(headerRow, h => h.includes("jabatan") || h.includes("posisi")),
+    pic:     findCol(headerRow, h => h.trim() === "pic" || (h.includes("pic") && !h.includes("pictur"))),
+    email:   findCol(headerRow, h => h.includes("email")),
+    task:    findCol(headerRow, h => h.trim() === "task"),
+    desc:    findCol(headerRow, h => h.includes("task") && h.includes("desc")),
+    dp:      findCol(headerRow, h => h.includes("pictur") || h.includes("display") || h.includes("foto") || h.includes("photo") || h.includes("gambar")),
   };
+}
 
-  function findColumnIndex(headerRow, aliases){
-    const normalized = headerRow.map(h => (h || '').trim().toLowerCase());
-    for(const alias of aliases){
-      const idx = normalized.indexOf(alias);
-      if(idx !== -1) return idx;
+function linkify(text){
+  return escapeHtml(text).replace(/(https?:\/\/[^\s<]+)/g, url =>
+    `<a href="${url}" target="_blank" rel="noopener" style="color:var(--gold-soft)">${url}</a>`);
+}
+
+function initials(name){
+  return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
+}
+
+function escapeHtml(str){
+  return (str||"").replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+
+function buildSection(idx, sheetKey, header, subheader, members){
+  const secId = `sec-${idx}`;
+  const taskLinks = members.map((m,i) => `
+    <li>
+      <a class="task-link" href="mailto:${encodeURIComponent(m.email)}">
+        <span class="name"><span class="idx">${String(i+1).padStart(2,"0")}</span>${escapeHtml(m.task || "(Tanpa nama task)")}</span>
+        <span class="arrow">${escapeHtml(m.email || "")} →</span>
+      </a>
+    </li>`).join("");
+
+  const empty = members.length === 0;
+  return `
+  <section class="section">
+    <div class="stamp">${escapeHtml(sheetKey.split(" ")[0] || sheetKey).slice(0,6)}</div>
+    <h2 class="header">${escapeHtml(header)}</h2>
+    ${subheader ? `<p class="subheader">${escapeHtml(subheader)}</p>` : ""}
+    ${empty
+      ? `<p class="subheader">Belum ada data PIC yang diisi untuk bagian ini.</p>`
+      : `<button class="team-btn" data-target="${secId}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+          Our Team
+        </button>
+        <ul class="task-list">${taskLinks}</ul>`}
+  </section>`;
+}
+
+function openModal(header, sheetKey, members){
+  document.getElementById("modal-title").textContent = header;
+  document.getElementById("modal-sub").textContent = `${sheetKey} — ${members.length} anggota tim`;
+  const grid = document.getElementById("modal-grid");
+  grid.innerHTML = members.map(m => `
+    <div class="card">
+      ${m.dp
+        ? `<img class="dp" src="${escapeHtml(m.dp)}" alt="${escapeHtml(m.pic)}" onerror="this.outerHTML='<div class=&quot;dp fallback&quot;>${initials(m.pic)}</div>'">`
+        : `<div class="dp fallback">${initials(m.pic)}</div>`}
+      <hr>
+      <div class="pic-name">${escapeHtml(m.pic || "-")}</div>
+      <hr>
+      <div class="task">${escapeHtml(m.task || "-")}</div>
+      <hr>
+      <div class="task-desc">${escapeHtml(m.desc || "-")}</div>
+    </div>
+  `).join("");
+  document.getElementById("modal-overlay").classList.add("open");
+}
+
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("modal-overlay").classList.remove("open");
+});
+document.getElementById("modal-overlay").addEventListener("click", (e) => {
+  if (e.target.id === "modal-overlay") e.target.classList.remove("open");
+});
+
+function renderError(message, hints){
+  document.getElementById("app").innerHTML = `
+    <div class="notice error">
+      <strong>Halaman belum bisa menampilkan data.</strong><br>
+      ${escapeHtml(message)}
+      ${hints ? `<ul>${hints.map(h=>`<li>${h}</li>`).join("")}</ul>` : ""}
+      <ul>
+        <li><strong>Melihat pesan "Failed to fetch"?</strong> Kemungkinan besar halaman ini sedang dibuka di dalam preview chat, yang memblokir koneksi internet keluar. Unduh file-nya lalu buka langsung di tab browser biasa (bukan di dalam preview chat).</li>
+      </ul>
+    </div>`;
+}
+
+async function main(){
+  let masterRows;
+  try {
+    masterRows = await fetchSheet(MASTER_SHEET_NAME);
+  } catch (err){
+    renderError(`Tidak bisa membaca sheet "${MASTER_SHEET_NAME}".`, [
+      `Pastikan nama tab persis <code>${MASTER_SHEET_NAME}</code>.`,
+      `Pastikan sharing sudah "Anyone with the link can view".`,
+      `Pesan asli: ${escapeHtml(err.message)}`
+    ]);
+    return;
+  }
+
+  const labelOf = (r) => (r[0] || "").toLowerCase().trim();
+  const sheetRow  = masterRows.find(r => labelOf(r) === "sheet");
+  const judulRow  = masterRows.find(r => labelOf(r).includes("judul") && !labelOf(r).includes("sub"));
+  const subRow    = masterRows.find(r => labelOf(r).includes("sub"));
+
+  if (!sheetRow || !judulRow){
+    renderError(`Sheet "${MASTER_SHEET_NAME}" ditemukan, tapi baris label "Sheet" dan/atau "Judul" di kolom A tidak ketemu.`, [
+      `Baris pertama di kolom A harus berisi teks <code>Sheet</code>, baris berikutnya <code>Judul</code>.`
+    ]);
+    return;
+  }
+
+  const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0);
+  const sectionsHtml = [];
+  const sectionMembers = [];
+  let introHtml = "";
+
+  for (let c = 1; c < numCols; c++){
+    const sectionKey = (sheetRow[c] || "").trim();
+    if (!sectionKey) continue;
+
+    const header = (judulRow[c] || "").trim() || sectionKey;
+    const subheader = subRow ? (subRow[c] || "").trim() : "";
+
+    if (sectionKey.toLowerCase() === "all"){
+      introHtml = `<div class="notice">${linkify(header)}</div>`;
+      continue;
     }
-    return -1;
-  }
 
-  function rowsToData(rows){
-    const headerRow = rows[0] || [];
-    const body = rows.slice(1);
-
-    const colIdx = {};
-    for(const key in COLUMN_ALIASES){
-      colIdx[key] = findColumnIndex(headerRow, COLUMN_ALIASES[key]);
+    let rows;
+    try {
+      rows = await fetchSheet(sectionKey);
+    } catch (err){
+      sectionsHtml.push(`
+        <div class="notice error">
+          <strong>Gagal memuat sheet "${escapeHtml(sectionKey)}".</strong><br>
+          Cek apakah nama tab di Google Sheet sama persis dengan <code>${escapeHtml(sectionKey)}</code>.<br>
+          Pesan asli: ${escapeHtml(err.message)}
+        </div>`);
+      continue;
     }
 
-    const get = (r, key) => colIdx[key] === -1 ? '' : (r[colIdx[key]] || '').trim();
-
-    return body
-      .map(r => ({
-        jenis:       get(r, 'jenis'),
-        title:       get(r, 'title'),
-        email:       get(r, 'email'),
-        picName:     get(r, 'picName'),
-        description: get(r, 'description'),
-      }))
-      .filter(p => p.picName !== '');
-  }
-
-  function setSyncStatus(state, text){
-    const el = document.getElementById('sync-status');
-    el.className = 'sync-status ' + state;
-    el.innerHTML = `<span class="dot2"></span>${text}`;
-  }
-
-  async function fetchSheetCSV(url){
-    const res = await fetch(url, { cache: 'no-store' });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const csvText = await res.text();
-    const rows = parseCSV(csvText);
-    const parsed = rowsToData(rows);
-    if(parsed.length === 0) throw new Error('Data kosong');
-    return parsed;
-  }
-
-  async function loadFromSheet(){
-    try{
-      DATA = await fetchSheetCSV(SHEET_CSV_URL_PRIMARY);
-      renderRoster();
-      const now = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-      setSyncStatus('ok', `Tersinkron dari Google Sheets · ${now}`);
-      return;
-    } catch(primaryErr){
-      console.warn('Endpoint utama gagal, mencoba endpoint cadangan.', primaryErr);
+    if (rows.length < 2){
+      sectionsHtml.push(`<div class="notice">Sheet "${escapeHtml(sectionKey)}" belum berisi data anggota tim.</div>`);
+      continue;
     }
 
-    try{
-      DATA = await fetchSheetCSV(SHEET_CSV_URL_SECONDARY);
-      renderRoster();
-      const now = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-      setSyncStatus('ok', `Tersinkron dari Google Sheets · ${now} (mode cadangan)`);
-    } catch(err){
-      console.warn('Gagal memuat dari Google Sheets, memakai data cadangan.', err);
-      DATA = FALLBACK_DATA;
-      renderRoster();
-      setSyncStatus('err', 'Gagal memuat data terbaru — menampilkan data cadangan');
-    }
+    const cols = detectColumns(rows[0]);
+    const members = rows.slice(1).map(r => ({
+      jabatan: cols.jabatan >= 0 ? r[cols.jabatan] : "",
+      pic:     cols.pic >= 0 ? r[cols.pic] : "",
+      email:   cols.email >= 0 ? r[cols.email] : "",
+      task:    cols.task >= 0 ? r[cols.task] : "",
+      desc:    cols.desc >= 0 ? r[cols.desc] : "",
+      dp:      cols.dp >= 0 ? r[cols.dp] : "",
+    })).filter(m => m.pic || m.task);
+
+    sectionMembers.push(members);
+    sectionsHtml.push(buildSection(sectionMembers.length - 1, sectionKey, header, subheader, members));
   }
 
-  function slugify(name){
-    return name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  if (sectionsHtml.length === 0 && !introHtml){
+    renderError(`Sheet "${MASTER_SHEET_NAME}" tidak berisi kolom section yang valid (kolom B dst. pada baris "Sheet" harus diisi nama tab).`);
+    return;
   }
 
-  function tagClass(jenis){
-    return 'jenis-' + slugify(jenis);
-  }
+  document.getElementById("app").innerHTML = introHtml + sectionsHtml.join("");
 
-  function renderRoster(){
-    const root = document.getElementById('roster-root');
-    root.innerHTML = '';
-
-    getCategoryOrder().forEach(cat => {
-      const people = DATA.filter(p => p.jenis === cat);
-      if(people.length === 0) return;
-
-      const block = document.createElement('section');
-      block.className = 'section-block';
-
-      const label = document.createElement('div');
-      label.className = 'section-label';
-      label.innerHTML = `<span class="swatch swatch-color-${slugify(cat)}"></span>
-        <span>${cat}</span>
-        <span class="count">· ${people.length}</span>`;
-
-      block.appendChild(label);
-
-      const roster = document.createElement('div');
-      roster.className = 'roster';
-
-      people.forEach(p => {
-        const card = document.createElement('button');
-        card.className = 'pic-card';
-        card.setAttribute('aria-label', `Lihat detail ${p.picName}`);
-        card.innerHTML = `
-          <span class="tag ${tagClass(p.jenis)}">${p.jenis}</span>
-          <span class="name">${p.picName}</span>
-          <span class="chev">→</span>
-        `;
-        card.addEventListener('click', () => showDetail(p));
-        roster.appendChild(card);
-      });
-
-      block.appendChild(roster);
-      root.appendChild(block);
+  document.querySelectorAll(".team-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.target.split("-")[1], 10);
+      const members = sectionMembers[idx];
+      const headerEl = btn.closest(".section").querySelector(".header");
+      const stampEl = btn.closest(".section").querySelector(".stamp");
+      openModal(headerEl.textContent, stampEl.textContent, members);
     });
-  }
-
-  function showDetail(person){
-    document.getElementById('detail-tag').textContent = person.jenis;
-    document.getElementById('detail-tag').className = 'detail-tag ' + tagClass(person.jenis);
-
-    // Judul besar: pakai PIC Task kalau ada, kalau kosong jatuhkan ke Nama PIC
-    document.getElementById('detail-name').textContent =
-      (person.title && person.title.trim() !== '') ? person.title : person.picName;
-
-    document.getElementById('detail-pic-name').textContent = person.picName;
-
-    const jobdeskEl = document.getElementById('detail-jobdesk');
-    if(person.description && person.description.trim() !== ''){
-      jobdeskEl.textContent = person.description;
-      jobdeskEl.classList.remove('empty');
-    } else {
-      jobdeskEl.textContent = 'Belum ada description tercantum untuk PIC ini.';
-      jobdeskEl.classList.add('empty');
-    }
-
-    const btn = document.getElementById('send-email-btn');
-    const note = document.getElementById('email-note');
-    if(person.email && person.email.trim() !== ''){
-      btn.disabled = false;
-      btn.onclick = () => {
-        window.location.href = `mailto:${person.email}`;
-      };
-      note.textContent = person.email;
-    } else {
-      btn.disabled = true;
-      btn.onclick = null;
-      note.textContent = 'Email tidak tersedia';
-    }
-
-    document.getElementById('list-screen').hidden = true;
-    document.getElementById('detail-screen').hidden = false;
-    window.scrollTo(0,0);
-    history.pushState({view:'detail', name:person.picName}, '', '#' + slugify(person.picName));
-  }
-
-  function showList(){
-    document.getElementById('detail-screen').hidden = true;
-    document.getElementById('list-screen').hidden = false;
-    window.scrollTo(0,0);
-  }
-
-  document.getElementById('back-btn').addEventListener('click', () => {
-    history.pushState({view:'list'}, '', window.location.pathname);
-    showList();
   });
+}
 
-  window.addEventListener('popstate', (e) => {
-    if(e.state && e.state.view === 'detail'){
-      const person = DATA.find(p => slugify(p.picName) === slugify(e.state.name));
-      if(person) showDetail(person); else showList();
-    } else {
-      showList();
-    }
-  });
-
-  // Render dulu pakai data cadangan supaya halaman tidak kosong saat memuat,
-  // lalu segera ganti dengan data terbaru dari Google Sheets.
-  renderRoster();
-  loadFromSheet().then(() => {
-    // Deep-link support: buka langsung ke detail seseorang lewat #slug-nama
-    const initialHash = window.location.hash.replace('#','');
-    if(initialHash){
-      const person = DATA.find(p => slugify(p.picName) === initialHash);
-      if(person) showDetail(person);
-    }
-  });
+main();
 </script>
-
 </body>
 </html>
