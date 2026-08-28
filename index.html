@@ -189,10 +189,6 @@
   .icon-btn:hover{ transform:translateY(-1px); }
   .icon-btn.icon-email:hover{ background:var(--primary); border-color:var(--primary); color:#fff; }
   .icon-btn.icon-wa:hover{ background:#25D366; border-color:#25D366; color:#fff; }
-  .no-contact{
-    font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-faint);
-    padding:0 6px;flex:none;
-  }
 
   /* modal */
   .modal-overlay{
@@ -385,24 +381,53 @@ async function fetchSheet(sheetName){
   return parseCSV(text);
 }
 
+function normalizeHeader(h){
+  // Hilangkan spasi tak-standar (non-breaking space, dsb), rapikan spasi ganda,
+  // dan buang tanda baca umum di ujung (titik dua, tanda bintang) supaya
+  // variasi kecil penulisan header (mis. "Task:", "Task ", "TASK") tetap cocok.
+  return (h || "")
+    .replace(/\u00A0/g, " ")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[:*]+$/g, "")
+    .trim();
+}
+
 function findCol(headerRow, matchers){
-  const lower = headerRow.map(h => (h||"").toLowerCase().trim());
+  const lower = headerRow.map(normalizeHeader);
   for (let i = 0; i < lower.length; i++){
     if (matchers(lower[i])) return i;
   }
   return -1;
 }
 
+// Urutan kolom baku sesuai sheet Master, dipakai sebagai cadangan kalau
+// nama header di suatu tab section tidak persis sama dengan yang diharapkan.
+const FALLBACK_ORDER = ["jabatan","pic","task","desc","dp","email","whatsapp"];
+
 function detectColumns(headerRow){
-  return {
+  const cols = {
     jabatan: findCol(headerRow, h => h.includes("jabatan") || h.includes("posisi")),
-    pic:     findCol(headerRow, h => h.trim() === "pic" || (h.includes("pic") && !h.includes("pictur"))),
-    email:   findCol(headerRow, h => h.includes("email")),
-    whatsapp:findCol(headerRow, h => h.includes("whatsapp") || h.trim() === "wa" || h.includes("no. wa") || h.includes("nomor wa")),
-    task:    findCol(headerRow, h => h.trim() === "task"),
-    desc:    findCol(headerRow, h => h.includes("task") && h.includes("desc")),
-    dp:      findCol(headerRow, h => h.includes("pictur") || h.includes("display") || h.includes("foto") || h.includes("photo") || h.includes("gambar")),
+    pic:     findCol(headerRow, h => h === "pic" || (h.includes("pic") && !h.includes("pictur"))),
+    email:   findCol(headerRow, h => h.includes("email") || h.includes("e-mail")),
+    whatsapp:findCol(headerRow, h => h.includes("whatsapp") || h === "wa" || h.includes("no wa") || h.includes("nomor wa") || h.includes("no. hp") || h.includes("no hp") || h.includes("telepon") || h.includes("phone")),
+    task:    findCol(headerRow, h => h === "task" || h === "nama task" || h.includes("tugas") && !h.includes("desk") && !h.includes("uraian")),
+    desc:    findCol(headerRow, h => (h.includes("task") || h.includes("tugas")) && (h.includes("desc") || h.includes("deskripsi") || h.includes("uraian")) || h === "deskripsi" || h === "description"),
+    dp:      findCol(headerRow, h => h.includes("pictur") || h.includes("display") || h.includes("foto") || h.includes("photo") || h.includes("gambar") || h.includes("avatar")),
   };
+
+  // Cadangan: kalau ada kolom penting yang tidak ketemu lewat nama header,
+  // tapi jumlah kolom di baris ini sama seperti susunan baku Master,
+  // pakai posisi kolomnya saja daripada membiarkan datanya hilang total.
+  const missingKey = FALLBACK_ORDER.find(key => cols[key] === -1);
+  if (missingKey && headerRow.length === FALLBACK_ORDER.length){
+    FALLBACK_ORDER.forEach((key, i) => {
+      if (cols[key] === -1) cols[key] = i;
+    });
+  }
+
+  return cols;
 }
 
 function linkify(text){
@@ -460,13 +485,12 @@ function buildSection(idx, sheetKey, header, subheader, members){
     const waBtn = waDigits
       ? `<a class="icon-btn icon-wa" href="https://wa.me/${waDigits}" target="_blank" rel="noopener" title="WhatsApp: ${escapeHtml(m.whatsapp)}" aria-label="Chat WhatsApp ${escapeHtml(m.whatsapp)}">${WA_SVG}</a>`
       : "";
-    const actionsHtml = (emailBtn || waBtn) ? `${emailBtn}${waBtn}` : `<span class="no-contact">—</span>`;
     return `
     <li>
       <div class="task-link">
         <span class="idx">${String(i+1).padStart(2,"0")}</span>
         <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
-        <span class="actions">${actionsHtml}</span>
+        <span class="actions">${emailBtn}${waBtn}</span>
       </div>
     </li>`;
   }).join("");
@@ -588,14 +612,14 @@ async function main(){
 
     const cols = detectColumns(rows[0]);
     const members = rows.slice(1).map(r => ({
-      jabatan: cols.jabatan >= 0 ? r[cols.jabatan] : "",
-      pic:     cols.pic >= 0 ? r[cols.pic] : "",
-      email:   cols.email >= 0 ? r[cols.email] : "",
-      whatsapp:cols.whatsapp >= 0 ? r[cols.whatsapp] : "",
-      task:    cols.task >= 0 ? r[cols.task] : "",
-      desc:    cols.desc >= 0 ? r[cols.desc] : "",
-      dp:      cols.dp >= 0 ? r[cols.dp] : "",
-    })).filter(m => m.pic || m.task);
+      jabatan: (cols.jabatan >= 0 ? r[cols.jabatan] : "") || "",
+      pic:     (cols.pic >= 0 ? r[cols.pic] : "") || "",
+      email:   (cols.email >= 0 ? r[cols.email] : "") || "",
+      whatsapp:(cols.whatsapp >= 0 ? r[cols.whatsapp] : "") || "",
+      task:    (cols.task >= 0 ? r[cols.task] : "") || "",
+      desc:    (cols.desc >= 0 ? r[cols.desc] : "") || "",
+      dp:      (cols.dp >= 0 ? r[cols.dp] : "") || "",
+    })).filter(m => m.pic || m.task || m.email || m.whatsapp || m.dp);
 
     sectionMembers.push(members);
     sectionsHtml.push(buildSection(sectionMembers.length - 1, sectionKey, header, subheader, members));
