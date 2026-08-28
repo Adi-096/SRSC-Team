@@ -8,61 +8,63 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0F1A2B;
-    --ink-2:#16233A;
-    --paper:#FBF6EA;
-    --paper-dim:#F0E8D6;
-    --gold:#C99A3E;
-    --gold-soft:#E4C583;
-    --teal:#2F6B63;
-    --line: rgba(16,25,43,0.16);
-    --cream-soft: rgba(251,246,234,0.62);
-    --cream-faint: rgba(251,246,234,0.38);
-    --radius: 3px;
+    --bg:#F3F5FC;
+    --surface:#FFFFFF;
+    --surface-soft:#EEF1FB;
+    --ink:#2B2F4E;
+    --ink-soft:#6B7094;
+    --ink-faint:#9CA1C4;
+    --primary:#5B6EE8;
+    --primary-dark:#4655C9;
+    --primary-soft:#E6E9FC;
+    --accent:#8B6FE0;
+    --line:#E2E5F3;
+    --radius: 12px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(201,154,62,0.10), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, rgba(47,107,99,0.14), transparent 55%),
-      var(--ink);
-    color: var(--paper);
+      radial-gradient(1100px 560px at 12% -8%, rgba(139,111,224,0.10), transparent 58%),
+      radial-gradient(900px 520px at 100% 0%, rgba(91,110,232,0.12), transparent 55%),
+      var(--bg);
+    color: var(--ink);
     font-family:'Work Sans', sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
-  .wrap{max-width:920px;margin:0 auto;padding:56px 24px 120px;}
+  .wrap{max-width:920px;margin:0 auto;padding:44px 24px 100px;}
 
   /* masthead */
   .masthead{
     display:flex;align-items:baseline;justify-content:space-between;
     border-bottom:1px solid var(--line);
-    padding-bottom:18px;margin-bottom:64px;
+    padding-bottom:16px;margin-bottom:36px;
     flex-wrap:wrap;gap:8px;
   }
   .masthead .brand{
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--gold-soft);
+    color:var(--primary-dark);
   }
   .masthead .sub{
     font-family:'IBM Plex Mono',monospace;
-    font-size:11px;color:var(--cream-faint);letter-spacing:.05em;
+    font-size:11px;color:var(--ink-faint);letter-spacing:.05em;
   }
 
   /* status / error messages */
   .notice{
     font-family:'Work Sans',sans-serif;
-    background:var(--paper);color:var(--ink);
+    background:var(--surface);color:var(--ink);
     border:1px solid var(--line);border-radius:var(--radius);
-    padding:20px 22px;margin-bottom:28px;
+    padding:20px 22px;margin-bottom:24px;
     font-size:14px;line-height:1.6;
+    box-shadow:0 1px 3px rgba(43,47,78,0.05);
   }
-  .notice.error{ border-left:4px solid #B84C3A; }
-  .notice.loading{ border-left:4px solid var(--teal); }
+  .notice.error{ border-left:4px solid #E0785A; }
+  .notice.loading{ border-left:4px solid var(--primary); }
   .notice code{
-    background:var(--paper-dim);padding:1px 6px;border-radius:2px;
+    background:var(--surface-soft);padding:1px 6px;border-radius:4px;
     font-family:'IBM Plex Mono',monospace;font-size:12.5px;
   }
   .notice ul{margin:10px 0 0;padding-left:18px;}
@@ -71,7 +73,7 @@
   /* section */
   .section{
     position:relative;
-    padding:44px 0 52px;
+    padding:28px 0 36px;
     border-bottom:1px dashed var(--line);
   }
   .section:last-of-type{border-bottom:none;}
@@ -80,12 +82,12 @@
     display:inline-flex;align-items:center;justify-content:center;
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;letter-spacing:.14em;
-    color:var(--gold-soft);
-    border:1px dashed var(--gold);
+    color:var(--primary-dark);
+    background:var(--primary-soft);
+    border:1px dashed var(--primary);
     border-radius:50%;
-    width:58px;height:58px;
-    transform:rotate(-6deg);
-    margin-bottom:18px;
+    width:54px;height:54px;
+    margin-bottom:16px;
     text-align:center;
     padding:4px;
   }
@@ -93,50 +95,50 @@
   h2.header{
     font-family:'Fraunces',serif;
     font-weight:600;
-    font-size:clamp(28px,4.4vw,42px);
-    line-height:1.08;
-    margin:0 0 10px;
-    color:var(--paper);
+    font-size:clamp(26px,4vw,38px);
+    line-height:1.1;
+    margin:0 0 8px;
+    color:var(--ink);
   }
   p.subheader{
     font-family:'Work Sans',sans-serif;
-    font-size:15.5px;
-    color:var(--cream-soft);
+    font-size:15px;
+    color:var(--ink-soft);
     max-width:56ch;
     line-height:1.6;
-    margin:0 0 26px;
+    margin:0 0 22px;
   }
 
   /* hero (judul utama / kolom "All"/"Master" di Sheet Master) */
   .hero{
     text-align:center;
-    padding:0 0 56px;
-    margin-bottom:52px;
+    padding:0 0 22px;
+    margin-bottom:20px;
     border-bottom:1px dashed var(--line);
   }
   .hero-title{
     font-family:'Fraunces',serif;
     font-weight:600;
-    font-size:clamp(22px,3vw,30px);
+    font-size:clamp(20px,2.7vw,27px);
     line-height:1.45;
-    color:var(--paper);
+    color:var(--ink);
     max-width:64ch;
     margin:0 auto;
   }
-  .hero-title a{ color:var(--gold-soft); }
+  .hero-title a{ color:var(--primary); }
 
   .team-btn{
     font-family:'IBM Plex Mono',monospace;
     font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--ink);background:var(--gold-soft);
-    border:1px solid var(--gold-soft);
-    padding:11px 20px;border-radius:2px;
+    color:#fff;background:var(--primary);
+    border:1px solid var(--primary);
+    padding:11px 20px;border-radius:8px;
     cursor:pointer;
     display:inline-flex;align-items:center;gap:8px;
     transition:background .15s ease, color .15s ease, transform .15s ease;
-    margin-bottom:34px;
+    margin-bottom:28px;
   }
-  .team-btn:hover{ background:transparent;color:var(--gold-soft); }
+  .team-btn:hover{ background:var(--primary-dark);border-color:var(--primary-dark); }
   .team-btn:active{ transform:scale(.98); }
   .team-btn svg{width:14px;height:14px;flex:none;}
 
@@ -147,51 +149,53 @@
   }
   .task-list li:last-child{border-bottom:1px solid var(--line);}
   .task-link{
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:16px 4px;
-    text-decoration:none;color:var(--paper);
+    display:flex;align-items:flex-start;gap:16px;
+    padding:15px 4px;
+    text-decoration:none;color:var(--ink);
     font-family:'Work Sans',sans-serif;font-weight:500;font-size:15px;
     transition:padding-left .15s ease, color .15s ease;
   }
-  .task-link:hover{ padding-left:10px; color:var(--gold-soft); }
+  .task-link:hover{ padding-left:10px; color:var(--primary); }
   .task-link .idx{
-    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cream-faint);
-    margin-right:14px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);
+    flex:none;width:20px;padding-top:2px;
   }
-  .task-link .name{ flex:1; }
+  .task-link .name{ flex:1 1 auto;min-width:0; }
   .task-link .arrow{
-    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cream-faint);
-    white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);
+    white-space:nowrap;flex:none;padding-top:2px;
   }
 
   /* modal */
   .modal-overlay{
-    position:fixed;inset:0;background:rgba(15,26,43,0.72);
+    position:fixed;inset:0;background:rgba(43,47,78,0.45);
     display:none;align-items:flex-start;justify-content:center;
     padding:40px 18px; overflow-y:auto; z-index:50;
   }
   .modal-overlay.open{display:flex;}
   .modal{
-    background:var(--paper);color:var(--ink);
+    background:var(--surface);color:var(--ink);
     border-radius:var(--radius);
     width:100%;max-width:900px;
     padding:30px 26px 36px;
     position:relative;
+    box-shadow:0 12px 40px rgba(43,47,78,0.18);
   }
   .modal-close{
     position:absolute;top:18px;right:18px;
     background:none;border:none;cursor:pointer;
     font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);
-    padding:6px 10px;border:1px solid var(--line);border-radius:2px;
+    padding:6px 10px;border:1px solid var(--line);border-radius:6px;
   }
-  .modal-close:hover{ background:var(--paper-dim); }
+  .modal-close:hover{ background:var(--surface-soft); }
   .modal h3{
     font-family:'Fraunces',serif;font-weight:600;
     font-size:24px;margin:0 0 4px;padding-right:60px;
+    color:var(--ink);
   }
   .modal .modal-sub{
     font-family:'IBM Plex Mono',monospace;font-size:11px;
-    color:var(--teal);letter-spacing:.08em;text-transform:uppercase;
+    color:var(--primary);letter-spacing:.08em;text-transform:uppercase;
     margin-bottom:26px;
   }
 
@@ -202,29 +206,30 @@
   }
   .card{
     position:relative;
-    background:#fff;
+    background:var(--surface);
     border:1px solid var(--line);
-    border-radius:2px;
+    border-radius:var(--radius);
     padding:20px 14px 18px;
     display:flex;flex-direction:column;align-items:center;text-align:center;
+    box-shadow:0 1px 3px rgba(43,47,78,0.05);
   }
   .card::before,.card::after{
     content:"";position:absolute;top:10px;width:7px;height:7px;
-    border-radius:50%;background:var(--paper-dim);
+    border-radius:50%;background:var(--surface-soft);
     border:1px solid var(--line);
   }
   .card::before{left:10px;}
   .card::after{right:10px;}
   .card .dp{
     width:64px;height:64px;border-radius:50%;
-    object-fit:cover;background:var(--paper-dim);
+    object-fit:cover;background:var(--surface-soft);
     border:1px solid var(--line);
     margin-bottom:14px;
   }
   .card .dp.fallback{
     display:flex;align-items:center;justify-content:center;
     font-family:'Fraunces',serif;font-size:22px;font-weight:600;
-    color:var(--teal);
+    color:var(--primary);
   }
   .card hr{
     width:100%;border:none;border-top:1px dashed var(--line);
@@ -236,18 +241,18 @@
   }
   .card .task{
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;
-    letter-spacing:.06em;text-transform:uppercase;color:var(--teal);
+    letter-spacing:.06em;text-transform:uppercase;color:var(--accent);
     line-height:1.5;
   }
   .card .task-desc{
-    font-family:'Work Sans',sans-serif;font-size:12.5px;color:#4A4636;
+    font-family:'Work Sans',sans-serif;font-size:12.5px;color:var(--ink-soft);
     line-height:1.55;
   }
 
   footer.page-footer{
-    margin-top:60px;
+    margin-top:48px;
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;
-    color:var(--cream-faint);letter-spacing:.05em;
+    color:var(--ink-faint);letter-spacing:.05em;
     text-align:center;
   }
 
@@ -367,7 +372,19 @@ function detectColumns(headerRow){
 
 function linkify(text){
   return escapeHtml(text).replace(/(https?:\/\/[^\s<]+)/g, url =>
-    `<a href="${url}" target="_blank" rel="noopener" style="color:var(--gold-soft)">${url}</a>`);
+    `<a href="${url}" target="_blank" rel="noopener" style="color:var(--primary)">${url}</a>`);
+}
+
+function toDirectImageUrl(url){
+  if (!url) return url;
+  const u = url.trim();
+  // Link share SharePoint/OneDrive (guestaccess.aspx) tidak menampilkan gambar
+  // langsung karena mengarah ke halaman preview, bukan file gambarnya.
+  // Menambahkan &download=1 memaksa server mengirim file aslinya.
+  if (/sharepoint\.com/i.test(u) && /guestaccess\.aspx/i.test(u) && !/[?&]download=1/i.test(u)){
+    return u + (u.includes("?") ? "&" : "?") + "download=1";
+  }
+  return u;
 }
 
 function initials(name){
@@ -385,7 +402,8 @@ function buildSection(idx, sheetKey, header, subheader, members){
   const taskLinks = members.map((m,i) => `
     <li>
       <a class="task-link" href="mailto:${encodeURIComponent(m.email)}">
-        <span class="name"><span class="idx">${String(i+1).padStart(2,"0")}</span>${escapeHtml(m.task || "(Tanpa nama task)")}</span>
+        <span class="idx">${String(i+1).padStart(2,"0")}</span>
+        <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
         <span class="arrow">${escapeHtml(m.email || "")} →</span>
       </a>
     </li>`).join("");
@@ -413,7 +431,7 @@ function openModal(header, sheetKey, members){
   grid.innerHTML = members.map(m => `
     <div class="card">
       ${m.dp
-        ? `<img class="dp" src="${escapeHtml(m.dp)}" alt="${escapeHtml(m.pic)}" onerror="this.outerHTML='<div class=&quot;dp fallback&quot;>${initials(m.pic)}</div>'">`
+        ? `<img class="dp" src="${escapeHtml(toDirectImageUrl(m.dp))}" alt="${escapeHtml(m.pic)}" onerror="this.outerHTML='<div class=&quot;dp fallback&quot;>${initials(m.pic)}</div>'">`
         : `<div class="dp fallback">${initials(m.pic)}</div>`}
       <hr>
       <div class="pic-name">${escapeHtml(m.pic || "-")}</div>
