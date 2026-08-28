@@ -8,30 +8,37 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F3F5FC;
+    --bg:#F2F5F9;
     --surface:#FFFFFF;
-    --surface-soft:#EEF1FB;
-    --ink:#2B2F4E;
-    --ink-soft:#6B7094;
-    --ink-faint:#9CA1C4;
-    --primary:#5B6EE8;
-    --primary-dark:#4655C9;
-    --primary-soft:#E6E9FC;
-    --accent:#8B6FE0;
-    --line:#E2E5F3;
+    --surface-soft:#E7F5FC;
+    --ink:#0B2A4A;
+    --ink-soft:#526279;
+    --ink-faint:#93A1B5;
+    --primary:#0A3D62;
+    --primary-dark:#062A45;
+    --primary-soft:#DCEEFB;
+    --accent:#0EA8E0;
+    --accent-warm:#F7941D;
+    --accent-warm-dark:#D97A0A;
+    --line:#DCE6F0;
+    --gradient-brand: linear-gradient(90deg,#B8266E 0%,#6C3FCB 50%,#3D63E6 100%);
     --radius: 12px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(1100px 560px at 12% -8%, rgba(139,111,224,0.10), transparent 58%),
-      radial-gradient(900px 520px at 100% 0%, rgba(91,110,232,0.12), transparent 55%),
+      radial-gradient(1100px 560px at 12% -8%, rgba(14,168,224,0.08), transparent 58%),
+      radial-gradient(900px 520px at 100% 0%, rgba(10,61,98,0.10), transparent 55%),
       var(--bg);
     color: var(--ink);
     font-family:'Work Sans', sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
+  }
+  .top-accent{
+    height:6px;width:100%;
+    background: var(--gradient-brand);
   }
   .wrap{max-width:920px;margin:0 auto;padding:44px 24px 100px;}
 
@@ -82,9 +89,10 @@
     display:inline-flex;align-items:center;justify-content:center;
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;letter-spacing:.14em;
-    color:var(--primary-dark);
-    background:var(--primary-soft);
-    border:1px dashed var(--primary);
+    color:#fff;
+    background: var(--gradient-brand);
+    border:none;
+    box-shadow:0 3px 10px rgba(11,42,74,0.18);
     border-radius:50%;
     width:54px;height:54px;
     margin-bottom:16px;
@@ -99,6 +107,7 @@
     line-height:1.1;
     margin:0 0 8px;
     color:var(--ink);
+    white-space:pre-line;
   }
   p.subheader{
     font-family:'Work Sans',sans-serif;
@@ -107,6 +116,7 @@
     max-width:56ch;
     line-height:1.6;
     margin:0 0 22px;
+    white-space:pre-line;
   }
 
   /* hero (judul utama / kolom "All"/"Master" di Sheet Master) */
@@ -124,21 +134,22 @@
     color:var(--ink);
     max-width:64ch;
     margin:0 auto;
+    white-space:pre-line;
   }
-  .hero-title a{ color:var(--primary); }
+  .hero-title a{ color:var(--accent); }
 
   .team-btn{
     font-family:'IBM Plex Mono',monospace;
     font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
-    color:#fff;background:var(--primary);
-    border:1px solid var(--primary);
+    color:#fff;background:var(--accent-warm);
+    border:1px solid var(--accent-warm);
     padding:11px 20px;border-radius:8px;
     cursor:pointer;
     display:inline-flex;align-items:center;gap:8px;
     transition:background .15s ease, color .15s ease, transform .15s ease;
     margin-bottom:28px;
   }
-  .team-btn:hover{ background:var(--primary-dark);border-color:var(--primary-dark); }
+  .team-btn:hover{ background:var(--accent-warm-dark);border-color:var(--accent-warm-dark); }
   .team-btn:active{ transform:scale(.98); }
   .team-btn svg{width:14px;height:14px;flex:none;}
 
@@ -155,12 +166,12 @@
     font-family:'Work Sans',sans-serif;font-weight:500;font-size:15px;
     transition:padding-left .15s ease, color .15s ease;
   }
-  .task-link:hover{ padding-left:10px; color:var(--primary); }
+  .task-link:hover{ padding-left:10px; color:var(--accent-warm-dark); }
   .task-link .idx{
     font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);
     flex:none;width:20px;padding-top:2px;
   }
-  .task-link .name{ flex:1 1 auto;min-width:0; }
+  .task-link .name{ flex:1 1 auto;min-width:0; white-space:pre-line; }
   .task-link .arrow{
     font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);
     white-space:nowrap;flex:none;padding-top:2px;
@@ -195,7 +206,7 @@
   }
   .modal .modal-sub{
     font-family:'IBM Plex Mono',monospace;font-size:11px;
-    color:var(--primary);letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent-warm-dark);letter-spacing:.08em;text-transform:uppercase;
     margin-bottom:26px;
   }
 
@@ -230,6 +241,7 @@
     display:flex;align-items:center;justify-content:center;
     font-family:'Fraunces',serif;font-size:22px;font-weight:600;
     color:var(--primary);
+    background: var(--primary-soft);
   }
   .card hr{
     width:100%;border:none;border-top:1px dashed var(--line);
@@ -238,15 +250,18 @@
   .card .pic-name{
     font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;
     color:var(--ink);
+    white-space:pre-line;
   }
   .card .task{
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;
-    letter-spacing:.06em;text-transform:uppercase;color:var(--accent);
+    letter-spacing:.06em;text-transform:uppercase;color:var(--accent-warm-dark);
     line-height:1.5;
+    white-space:pre-line;
   }
   .card .task-desc{
     font-family:'Work Sans',sans-serif;font-size:12.5px;color:var(--ink-soft);
     line-height:1.55;
+    white-space:pre-line;
   }
 
   footer.page-footer{
@@ -263,6 +278,7 @@
 </head>
 <body>
 
+<div class="top-accent"></div>
 <div class="wrap">
   <div class="masthead">
     <div class="brand">Direktori Tim — SRSC</div>
@@ -328,6 +344,7 @@ function parseCSV(text){
     if (inQuotes){
       if (c === '"' && next === '"'){ field += '"'; i++; }
       else if (c === '"'){ inQuotes = false; }
+      else if (c === '\r'){ /* skip, biarkan \n berikutnya yang jadi baris baru */ }
       else { field += c; }
     } else {
       if (c === '"'){ inQuotes = true; }
