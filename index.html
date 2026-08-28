@@ -395,7 +395,7 @@ function detectColumns(headerRow){
     pic:     findCol(headerRow, h => h.trim() === "pic" || (h.includes("pic") && !h.includes("pictur"))),
     email:   findCol(headerRow, h => h.includes("email")),
     whatsapp:findCol(headerRow, h => h.includes("whatsapp") || h.trim() === "wa" || h.includes("no. wa") || h.includes("nomor wa")),
-    task:    findCol(headerRow, h => h.trim() === "task"),
+    task:    findCol(headerRow, h => h.includes("task") && !h.includes("desc")),
     desc:    findCol(headerRow, h => h.includes("task") && h.includes("desc")),
     dp:      findCol(headerRow, h => h.includes("pictur") || h.includes("display") || h.includes("foto") || h.includes("photo") || h.includes("gambar")),
   };
@@ -454,7 +454,7 @@ function buildSection(idx, sheetKey, header, subheader, members){
     <li>
       <div class="task-link">
         <span class="idx">${String(i+1).padStart(2,"0")}</span>
-        <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
+        <span class="name">${escapeHtml(m.task || m.jabatan || "(Tanpa nama task)")}</span>
         <span class="actions">${emailBtn}${waBtn}</span>
       </div>
     </li>`;
