@@ -114,21 +114,6 @@
   }
   .section:last-of-type{border-bottom:none;}
 
-  .stamp{
-    display:inline-flex;align-items:center;justify-content:center;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;letter-spacing:.14em;
-    color:#fff;
-    background: var(--gradient-brand);
-    border:none;
-    box-shadow:0 3px 10px rgba(11,42,74,0.18);
-    border-radius:50%;
-    width:54px;height:54px;
-    margin-bottom:16px;
-    text-align:center;
-    padding:4px;
-  }
-
   h2.header{
     font-family:'Fraunces',serif;
     font-weight:600;
@@ -587,8 +572,7 @@ function buildSection(idx, sheetKey, header, subheader, members, career){
 
   const empty = members.length === 0;
   return `
-  <section class="section" id="${secId}" data-career="${escapeHtml(career || "")}">
-    <div class="stamp">${escapeHtml(sheetKey.split(" ")[0] || sheetKey).slice(0,6)}</div>
+  <section class="section" id="${secId}" data-career="${escapeHtml(career || "")}" data-sheet="${escapeHtml(sheetKey)}">
     <h2 class="header">${escapeHtml(header)}</h2>
     ${subheader ? `<p class="subheader">${escapeHtml(subheader)}</p>` : ""}
     ${empty
@@ -822,8 +806,8 @@ async function main(){
       const idx = parseInt(btn.dataset.target.split("-")[1], 10);
       const members = sectionMembers[idx];
       const headerEl = btn.closest(".section").querySelector(".header");
-      const stampEl = btn.closest(".section").querySelector(".stamp");
-      openModal(headerEl.textContent, stampEl.textContent, members);
+      const sheetName = btn.closest(".section").dataset.sheet || "";
+      openModal(headerEl.textContent, sheetName, members);
     });
   });
 }
