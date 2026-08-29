@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Course Scheduling & Student Registration Team</title>
+<title>Direktori Tim — SRSC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -816,6 +816,7 @@ async function loadAndRender(isInitial){
   const judulRow  = masterRows.find(r => labelOf(r).includes("judul") && !labelOf(r).includes("sub"));
   const subRow    = masterRows.find(r => labelOf(r).includes("sub"));
   const careerRow = masterRows.find(r => labelOf(r).includes("career") || labelOf(r).includes("kategori"));
+  const statusRow = masterRows.find(r => labelOf(r).includes("status"));
 
   if (!sheetRow || !judulRow){
     if (isInitial){
@@ -826,7 +827,7 @@ async function loadAndRender(isInitial){
     return;
   }
 
-  const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0);
+  const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0, statusRow ? statusRow.length : 0);
   const sectionsHtml = [];
   const newSectionMembers = [];
   const careerTabs = []; // daftar kategori unik (Career), urut sesuai kemunculan pertama di sheet Master
@@ -837,6 +838,13 @@ async function loadAndRender(isInitial){
   for (let c = 1; c < numCols; c++){
     const sectionKey = (sheetRow[c] || "").trim();
     if (!sectionKey) continue;
+
+    // Baris "status" di sheet Master (Active / Inactive) menentukan apakah
+    // sebuah sheet ditampilkan di halaman atau tidak. Kalau kosong (belum
+    // diisi), section tetap dianggap Active — supaya sheet lama yang belum
+    // punya kolom status tidak tiba-tiba hilang.
+    const rawStatus = (statusRow ? (statusRow[c] || "") : "").trim().toLowerCase();
+    if (rawStatus === "inactive" || rawStatus === "nonaktif" || rawStatus === "non-aktif") continue;
 
     const header = (judulRow[c] || "").trim() || sectionKey;
     const subheader = subRow ? (subRow[c] || "").trim() : "";
