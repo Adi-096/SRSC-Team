@@ -565,9 +565,22 @@ function linkify(text){
 function toDirectImageUrl(url){
   if (!url) return url;
   const u = url.trim();
+
+  // Link Google Drive ("Anyone with the link") -> diubah ke URL thumbnail
+  // langsung supaya bisa ditampilkan sebagai <img>, bukan halaman preview.
+  const driveMatch =
+    u.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+    u.match(/drive\.google\.com\/(?:open|uc)\?[^#]*[?&]id=([a-zA-Z0-9_-]+)/) ||
+    u.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (/drive\.google\.com/i.test(u) && driveMatch){
+    return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+  }
+
   // Link share SharePoint/OneDrive (guestaccess.aspx) tidak menampilkan gambar
   // langsung karena mengarah ke halaman preview, bukan file gambarnya.
-  // Menambahkan &download=1 memaksa server mengirim file aslinya.
+  // Menambahkan &download=1 memaksa server mengirim file aslinya — tapi ini
+  // hanya berhasil kalau tenant SharePoint mengizinkan akses anonim/publik;
+  // kalau tetap meminta login, gambar tidak akan bisa dimuat sama sekali.
   if (/sharepoint\.com/i.test(u) && /guestaccess\.aspx/i.test(u) && !/[?&]download=1/i.test(u)){
     return u + (u.includes("?") ? "&" : "?") + "download=1";
   }
