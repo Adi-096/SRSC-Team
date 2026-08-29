@@ -59,6 +59,35 @@
     font-size:11px;color:var(--ink-faint);letter-spacing:.05em;
   }
 
+  /* career tabs — sticky navigation so users don't need to scroll to find a section */
+  .tabs-wrap{
+    position:sticky; top:0; z-index:20;
+    background:var(--bg);
+  }
+  .tabs-scroll{
+    display:flex; gap:8px; align-items:center;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 0; margin-bottom:6px;
+    border-bottom:1px solid var(--line);
+    scrollbar-width:thin;
+  }
+  .tabs-scroll::-webkit-scrollbar{ height:4px; }
+  .tabs-scroll::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+  .tab-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    padding:9px 16px; border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--surface); color:var(--ink-soft);
+    white-space:nowrap; flex:none; cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .tab-btn:hover{ border-color:var(--accent); color:var(--ink); transform:translateY(-1px); }
+  .tab-btn.active{
+    background:var(--gradient-brand); color:#fff; border-color:transparent;
+    box-shadow:0 3px 10px rgba(11,42,74,0.18);
+  }
+
   /* status / error messages */
   .notice{
     font-family:'Work Sans',sans-serif;
@@ -350,6 +379,8 @@
     <div class="sub" id="masthead-sub">Course Registration &amp; Scheduling Center</div>
   </div>
 
+  <div class="tabs-wrap" id="tabs-wrap"></div>
+
   <div id="app">
     <div class="notice loading">Memuat data dari Google Sheet…</div>
   </div>
@@ -534,7 +565,7 @@ function escapeHtml(str){
   }[m]));
 }
 
-function buildSection(idx, sheetKey, header, subheader, members){
+function buildSection(idx, sheetKey, header, subheader, members, career){
   const secId = `sec-${idx}`;
   const taskLinks = members.map((m,i) => {
     const waDigits = formatWaLink(m.whatsapp);
@@ -556,7 +587,7 @@ function buildSection(idx, sheetKey, header, subheader, members){
 
   const empty = members.length === 0;
   return `
-  <section class="section">
+  <section class="section" id="${secId}" data-career="${escapeHtml(career || "")}">
     <div class="stamp">${escapeHtml(sheetKey.split(" ")[0] || sheetKey).slice(0,6)}</div>
     <h2 class="header">${escapeHtml(header)}</h2>
     ${subheader ? `<p class="subheader">${escapeHtml(subheader)}</p>` : ""}
@@ -692,6 +723,7 @@ async function main(){
   const sheetRow  = masterRows.find(r => labelOf(r) === "sheet");
   const judulRow  = masterRows.find(r => labelOf(r).includes("judul") && !labelOf(r).includes("sub"));
   const subRow    = masterRows.find(r => labelOf(r).includes("sub"));
+  const careerRow = masterRows.find(r => labelOf(r).includes("career") || labelOf(r).includes("kategori"));
 
   if (!sheetRow || !judulRow){
     renderError(`Sheet "${MASTER_SHEET_NAME}" ditemukan, tapi baris label "Sheet" dan/atau "Judul" di kolom A tidak ketemu.`, [
@@ -703,6 +735,7 @@ async function main(){
   const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0);
   const sectionsHtml = [];
   sectionMembers = [];
+  const careerTabs = []; // daftar kategori unik (Career), urut sesuai kemunculan pertama di sheet Master
   let introHtml = "";
 
   for (let c = 1; c < numCols; c++){
@@ -716,6 +749,10 @@ async function main(){
       introHtml = `<div class="hero"><h1 class="hero-title">${linkify(header)}</h1></div>`;
       continue;
     }
+
+    const rawCareer = careerRow ? (careerRow[c] || "").trim() : "";
+    const career = (rawCareer && rawCareer !== "-") ? rawCareer : "";
+    if (career && !careerTabs.includes(career)) careerTabs.push(career);
 
     let rows;
     try {
@@ -747,7 +784,7 @@ async function main(){
     })).filter(m => m.pic || m.task || m.email || m.whatsapp || m.dp);
 
     sectionMembers.push(members);
-    sectionsHtml.push(buildSection(sectionMembers.length - 1, sectionKey, header, subheader, members));
+    sectionsHtml.push(buildSection(sectionMembers.length - 1, sectionKey, header, subheader, members, career));
   }
 
   if (sectionsHtml.length === 0 && !introHtml){
@@ -756,6 +793,29 @@ async function main(){
   }
 
   document.getElementById("app").innerHTML = introHtml + sectionsHtml.join("");
+
+  const tabsWrap = document.getElementById("tabs-wrap");
+  if (careerTabs.length > 0){
+    const allBtn = `<button class="tab-btn active" data-career="__all__" type="button">Semua</button>`;
+    const catBtns = careerTabs.map(k =>
+      `<button class="tab-btn" data-career="${escapeHtml(k)}" type="button">${escapeHtml(k)}</button>`
+    ).join("");
+    tabsWrap.innerHTML = `<div class="tabs-scroll">${allBtn}${catBtns}</div>`;
+
+    tabsWrap.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const chosen = btn.dataset.career;
+        document.querySelectorAll(".section[data-career]").forEach(sec => {
+          const secCareer = sec.dataset.career;
+          const show = chosen === "__all__" || !secCareer || secCareer === chosen;
+          sec.style.display = show ? "" : "none";
+        });
+        tabsWrap.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+      });
+    });
+  } else {
+    tabsWrap.innerHTML = "";
+  }
 
   document.querySelectorAll(".team-btn").forEach(btn => {
     btn.addEventListener("click", () => {
