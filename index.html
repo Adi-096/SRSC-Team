@@ -88,6 +88,30 @@
     box-shadow:0 3px 10px rgba(11,42,74,0.18);
   }
 
+  /* sub-tab — muncul di bawah tab kategori utama saat kategori yang aktif
+     punya lebih dari satu section, sebagai toggle untuk memilih satu
+     section spesifik (klik lagi tombol yang aktif untuk kembali ke semua). */
+  .subtabs-scroll{
+    display:none;
+    gap:6px; align-items:center;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    padding:0 0 14px;
+  }
+  .subtabs-scroll.open{ display:flex; }
+  .subtab-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:.04em;
+    padding:6px 14px; border-radius:16px;
+    border:1px solid var(--line);
+    background:var(--surface-soft); color:var(--ink-soft);
+    white-space:nowrap; flex:none; cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .subtab-btn:hover{ border-color:var(--accent); color:var(--ink); }
+  .subtab-btn.active{
+    background:var(--accent); color:#fff; border-color:var(--accent);
+  }
+
   /* status / error messages */
   .notice{
     font-family:'Work Sans',sans-serif;
@@ -786,6 +810,7 @@ async function main(){
   const sectionsHtml = [];
   sectionMembers = [];
   const careerTabs = []; // daftar kategori unik (Career), urut sesuai kemunculan pertama di sheet Master
+  const careerSections = {}; // career -> daftar {id, label} section di dalamnya, untuk sub-tab
   let introHtml = "";
 
   for (let c = 1; c < numCols; c++){
@@ -834,7 +859,14 @@ async function main(){
     })).filter(m => m.pic || m.task || m.email || m.whatsapp || m.dp);
 
     sectionMembers.push(members);
-    sectionsHtml.push(buildSection(sectionMembers.length - 1, sectionKey, header, subheader, members, career));
+    const secIdx = sectionMembers.length - 1;
+    sectionsHtml.push(buildSection(secIdx, sectionKey, header, subheader, members, career));
+    if (career){
+      (careerSections[career] = careerSections[career] || []).push({
+        id: `sec-${secIdx}`,
+        label: header.replace(/\s*\n\s*/g, " ").trim() || sectionKey
+      });
+    }
   }
 
   if (sectionsHtml.length === 0 && !introHtml){
@@ -846,21 +878,65 @@ async function main(){
 
   const tabsWrap = document.getElementById("tabs-wrap");
   if (careerTabs.length > 0){
-    const allBtn = `<button class="tab-btn active" data-career="__all__" type="button">Semua</button>`;
     const catBtns = careerTabs.map(k =>
       `<button class="tab-btn" data-career="${escapeHtml(k)}" type="button">${escapeHtml(k)}</button>`
     ).join("");
-    tabsWrap.innerHTML = `<div class="tabs-scroll">${allBtn}${catBtns}</div>`;
+    tabsWrap.innerHTML = `<div class="tabs-scroll">${catBtns}</div><div class="subtabs-scroll" id="subtabs-scroll"></div>`;
+
+    const subtabsEl = document.getElementById("subtabs-scroll");
+
+    const showAllSections = () => {
+      document.querySelectorAll(".section[data-career]").forEach(sec => { sec.style.display = ""; });
+    };
+    const filterByCareer = (career) => {
+      document.querySelectorAll(".section[data-career]").forEach(sec => {
+        const secCareer = sec.dataset.career;
+        sec.style.display = (!secCareer || secCareer === career) ? "" : "none";
+      });
+    };
+    const filterBySectionId = (id) => {
+      document.querySelectorAll(".section[data-career]").forEach(sec => {
+        sec.style.display = (sec.id === id) ? "" : "none";
+      });
+    };
+    const closeSubtabs = () => {
+      subtabsEl.innerHTML = "";
+      subtabsEl.classList.remove("open");
+    };
+    const renderSubtabs = (career) => {
+      const list = careerSections[career] || [];
+      if (list.length <= 1){ closeSubtabs(); return; }
+      subtabsEl.innerHTML = list.map(item =>
+        `<button class="subtab-btn" data-sec-id="${escapeHtml(item.id)}" type="button">${escapeHtml(item.label)}</button>`
+      ).join("");
+      subtabsEl.classList.add("open");
+      subtabsEl.querySelectorAll(".subtab-btn").forEach(sBtn => {
+        sBtn.addEventListener("click", () => {
+          const alreadyActive = sBtn.classList.contains("active");
+          subtabsEl.querySelectorAll(".subtab-btn").forEach(b => b.classList.remove("active"));
+          if (alreadyActive){
+            filterByCareer(career); // balik ke: semua section dalam kategori ini
+          } else {
+            sBtn.classList.add("active");
+            filterBySectionId(sBtn.dataset.secId);
+          }
+        });
+      });
+    };
 
     tabsWrap.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        const chosen = btn.dataset.career;
-        document.querySelectorAll(".section[data-career]").forEach(sec => {
-          const secCareer = sec.dataset.career;
-          const show = chosen === "__all__" || !secCareer || secCareer === chosen;
-          sec.style.display = show ? "" : "none";
-        });
-        tabsWrap.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+        const alreadyActive = btn.classList.contains("active");
+        tabsWrap.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        if (alreadyActive){
+          // klik ulang tab yang sedang aktif -> nonaktifkan, tampilkan semua section
+          showAllSections();
+          closeSubtabs();
+        } else {
+          btn.classList.add("active");
+          filterByCareer(btn.dataset.career);
+          renderSubtabs(btn.dataset.career);
+        }
       });
     });
   } else {
