@@ -173,6 +173,36 @@
     border-top:1px solid var(--line);
   }
   .task-list li:last-child{border-bottom:1px solid var(--line);}
+
+  /* leadership block (Section Head / Manager / Senior Manager) — tampil di
+     bagian bawah setiap section, terpisah dari daftar task bernomor */
+  .leaders-block{
+    margin-top:22px;padding-top:20px;
+    border-top:1px dashed var(--line);
+  }
+  .leaders-heading{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;
+  }
+  .leaders-grid{ display:flex;flex-wrap:wrap;gap:10px; }
+  .leader-card{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    flex:1 1 220px;min-width:200px;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:12px 16px;cursor:pointer;
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .leader-card:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 3px 10px rgba(11,42,74,0.08); }
+  .leader-info{ display:flex;flex-direction:column;gap:3px;min-width:0; }
+  .leader-role{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent-warm-dark);
+  }
+  .leader-name{
+    font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .leader-actions{ display:flex;gap:6px;flex:none; }
   .task-link{
     display:flex;align-items:center;gap:16px;
     padding:15px 4px;
@@ -552,7 +582,24 @@ function escapeHtml(str){
 
 function buildSection(idx, sheetKey, header, subheader, members, career){
   const secId = `sec-${idx}`;
-  const taskLinks = members.map((m,i) => {
+
+  // Jabatan/posisi yang diperlakukan sebagai "leader" — ditampilkan terpisah
+  // di bagian bawah tiap section, bukan sebagai item bernomor di daftar task.
+  const LEADER_TITLES = ["senior manager","manager","section head"];
+  const normJabatan = (j) => (j || "").toLowerCase().trim();
+
+  const regularIdx = [];
+  const leaderIdx = [];
+  members.forEach((m,i) => {
+    if (LEADER_TITLES.includes(normJabatan(m.jabatan))) leaderIdx.push(i);
+    else regularIdx.push(i);
+  });
+  leaderIdx.sort((a,b) =>
+    LEADER_TITLES.indexOf(normJabatan(members[a].jabatan)) - LEADER_TITLES.indexOf(normJabatan(members[b].jabatan))
+  );
+
+  const taskLinks = regularIdx.map((i, displayPos) => {
+    const m = members[i];
     const waDigits = formatWaLink(m.whatsapp);
     const emailBtn = isValidEmail(m.email)
       ? `<a class="icon-btn icon-email" href="mailto:${encodeURIComponent(m.email.trim())}" title="Email: ${escapeHtml(m.email)}" aria-label="Kirim email ke ${escapeHtml(m.email)}">${EMAIL_SVG}</a>`
@@ -563,12 +610,37 @@ function buildSection(idx, sheetKey, header, subheader, members, career){
     return `
     <li>
       <div class="task-link" data-sec="${idx}" data-member="${i}" role="button" tabindex="0" aria-haspopup="dialog">
-        <span class="idx">${String(i+1).padStart(2,"0")}</span>
+        <span class="idx">${String(displayPos+1).padStart(2,"0")}</span>
         <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
         <span class="actions">${emailBtn}${waBtn}</span>
       </div>
     </li>`;
   }).join("");
+
+  const leadersHtml = leaderIdx.length === 0 ? "" : `
+    <div class="leaders-block">
+      <div class="leaders-heading">Person In Charge</div>
+      <div class="leaders-grid">
+        ${leaderIdx.map(i => {
+          const m = members[i];
+          const waDigits = formatWaLink(m.whatsapp);
+          const emailBtn = isValidEmail(m.email)
+            ? `<a class="icon-btn icon-email" href="mailto:${encodeURIComponent(m.email.trim())}" title="Email: ${escapeHtml(m.email)}" aria-label="Kirim email ke ${escapeHtml(m.email)}">${EMAIL_SVG}</a>`
+            : "";
+          const waBtn = waDigits
+            ? `<a class="icon-btn icon-wa" href="https://wa.me/${waDigits}" target="_blank" rel="noopener" title="WhatsApp: ${escapeHtml(m.whatsapp)}" aria-label="Chat WhatsApp ${escapeHtml(m.whatsapp)}">${WA_SVG}</a>`
+            : "";
+          return `
+          <div class="leader-card" data-sec="${idx}" data-member="${i}" role="button" tabindex="0" aria-haspopup="dialog">
+            <div class="leader-info">
+              <div class="leader-role">${escapeHtml(m.jabatan)}</div>
+              <div class="leader-name">${escapeHtml(m.pic || "-")}</div>
+            </div>
+            <div class="leader-actions">${emailBtn}${waBtn}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
 
   const empty = members.length === 0;
   return `
@@ -581,7 +653,8 @@ function buildSection(idx, sheetKey, header, subheader, members, career){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
           Our Team
         </button>
-        <ul class="task-list">${taskLinks}</ul>`}
+        <ul class="task-list">${taskLinks}</ul>
+        ${leadersHtml}`}
   </section>`;
 }
 
@@ -655,7 +728,7 @@ document.getElementById("member-modal-overlay").addEventListener("click", (e) =>
 // (mailto:/wa.me) tanpa ikut membuka popup.
 document.addEventListener("click", (e) => {
   if (e.target.closest(".icon-btn")) return;
-  const link = e.target.closest(".task-link");
+  const link = e.target.closest(".task-link, .leader-card");
   if (!link) return;
   const sec = link.dataset.sec;
   const idx = link.dataset.member;
@@ -667,7 +740,7 @@ document.addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== " ") return;
-  const link = e.target.closest && e.target.closest(".task-link");
+  const link = e.target.closest && e.target.closest(".task-link, .leader-card");
   if (!link) return;
   e.preventDefault();
   link.click();
