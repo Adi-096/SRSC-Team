@@ -165,6 +165,7 @@
     color:var(--ink);
     font-family:'Work Sans',sans-serif;font-weight:500;font-size:15px;
     transition:padding-left .15s ease;
+    cursor:pointer;
   }
   .task-link:hover{ padding-left:10px; }
   .task-link .idx{
@@ -277,6 +278,57 @@
     white-space:pre-line;
   }
 
+  /* single-member detail modal */
+  .member-modal{ max-width:380px; text-align:center; }
+  .member-card{ display:flex;flex-direction:column;align-items:center; }
+  .member-card .dp{
+    width:96px;height:96px;border-radius:50%;
+    object-fit:cover;background:var(--surface-soft);
+    border:1px solid var(--line);
+  }
+  .member-card .dp.fallback{
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-size:30px;font-weight:600;
+    color:var(--primary);
+    background:var(--primary-soft);
+  }
+  .member-card hr{
+    width:100%;border:none;border-top:1px dashed var(--line);
+    margin:16px 0;
+  }
+  .member-card .pic-name{
+    font-family:'Fraunces',serif;font-weight:600;font-size:19px;
+    color:var(--ink);white-space:pre-line;
+  }
+  .member-card .task{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--accent-warm-dark);
+    line-height:1.5;white-space:pre-line;
+  }
+  .member-card .task-desc{
+    font-family:'Work Sans',sans-serif;font-size:13.5px;color:var(--ink-soft);
+    line-height:1.6;white-space:pre-line;
+  }
+  .member-actions{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+    margin-top:22px;width:100%;
+  }
+  .member-action-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:11px 20px;border-radius:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.04em;
+    text-decoration:none;color:#fff;border:1px solid transparent;
+    transition:transform .15s ease, filter .15s ease;
+  }
+  .member-action-btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+  .member-action-btn svg{width:15px;height:15px;flex:none;}
+  .member-action-btn.email{ background:var(--primary); }
+  .member-action-btn.wa{ background:#25D366; }
+  .member-actions .no-contact{
+    font-family:'Work Sans',sans-serif;font-size:12.5px;color:var(--ink-faint);
+    margin-top:4px;
+  }
+
   footer.page-footer{
     margin-top:48px;
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;
@@ -311,6 +363,13 @@
     <h3 id="modal-title"></h3>
     <div class="modal-sub" id="modal-sub"></div>
     <div class="card-grid" id="modal-grid"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="member-modal-overlay">
+  <div class="modal member-modal">
+    <button class="modal-close" id="member-modal-close">Tutup ✕</button>
+    <div class="member-card" id="member-card-content"></div>
   </div>
 </div>
 
@@ -487,7 +546,7 @@ function buildSection(idx, sheetKey, header, subheader, members){
       : "";
     return `
     <li>
-      <div class="task-link">
+      <div class="task-link" data-sec="${idx}" data-member="${i}" role="button" tabindex="0" aria-haspopup="dialog">
         <span class="idx">${String(i+1).padStart(2,"0")}</span>
         <span class="name">${escapeHtml(m.task || "(Tanpa nama task)")}</span>
         <span class="actions">${emailBtn}${waBtn}</span>
@@ -531,11 +590,72 @@ function openModal(header, sheetKey, members){
   document.getElementById("modal-overlay").classList.add("open");
 }
 
+function openMemberModal(m){
+  const waDigits = formatWaLink(m.whatsapp);
+  const emailValid = isValidEmail(m.email);
+
+  const dpHtml = m.dp
+    ? `<img class="dp" src="${escapeHtml(toDirectImageUrl(m.dp))}" alt="${escapeHtml(m.pic)}" onerror="this.outerHTML='<div class=&quot;dp fallback&quot;>${initials(m.pic)}</div>'">`
+    : `<div class="dp fallback">${initials(m.pic)}</div>`;
+
+  const emailBtn = emailValid
+    ? `<a class="member-action-btn email" href="mailto:${encodeURIComponent(m.email.trim())}" title="Email: ${escapeHtml(m.email)}">${EMAIL_SVG}<span>Email</span></a>`
+    : "";
+  const waBtn = waDigits
+    ? `<a class="member-action-btn wa" href="https://wa.me/${waDigits}" target="_blank" rel="noopener" title="WhatsApp: ${escapeHtml(m.whatsapp)}">${WA_SVG}<span>WhatsApp</span></a>`
+    : "";
+  const actionsHtml = (emailBtn || waBtn)
+    ? `<div class="member-actions">${emailBtn}${waBtn}</div>`
+    : `<div class="member-actions"><span class="no-contact">Kontak belum tersedia.</span></div>`;
+
+  document.getElementById("member-card-content").innerHTML = `
+    ${dpHtml}
+    <hr>
+    <div class="pic-name">${escapeHtml(m.pic || "-")}</div>
+    <hr>
+    <div class="task">${escapeHtml(m.task || "-")}</div>
+    <hr>
+    <div class="task-desc">${escapeHtml(m.desc || "-")}</div>
+    ${actionsHtml}
+  `;
+  document.getElementById("member-modal-overlay").classList.add("open");
+}
+
 document.getElementById("modal-close").addEventListener("click", () => {
   document.getElementById("modal-overlay").classList.remove("open");
 });
 document.getElementById("modal-overlay").addEventListener("click", (e) => {
   if (e.target.id === "modal-overlay") e.target.classList.remove("open");
+});
+
+document.getElementById("member-modal-close").addEventListener("click", () => {
+  document.getElementById("member-modal-overlay").classList.remove("open");
+});
+document.getElementById("member-modal-overlay").addEventListener("click", (e) => {
+  if (e.target.id === "member-modal-overlay") e.target.classList.remove("open");
+});
+
+// Klik pada setiap item di daftar link (task-list) -> buka popup detail PIC.
+// Klik pada tombol email/WA di sisi kanan tetap menjalankan aksi masing-masing
+// (mailto:/wa.me) tanpa ikut membuka popup.
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".icon-btn")) return;
+  const link = e.target.closest(".task-link");
+  if (!link) return;
+  const sec = link.dataset.sec;
+  const idx = link.dataset.member;
+  if (sec === undefined || idx === undefined) return;
+  const members = sectionMembers[Number(sec)];
+  const member = members && members[Number(idx)];
+  if (member) openMemberModal(member);
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const link = e.target.closest && e.target.closest(".task-link");
+  if (!link) return;
+  e.preventDefault();
+  link.click();
 });
 
 function renderError(message, hints){
@@ -549,6 +669,11 @@ function renderError(message, hints){
       </ul>
     </div>`;
 }
+
+// Global: menyimpan data anggota tim per section, dipakai baik oleh modal
+// "Our Team" (grid semua anggota) maupun popup detail per-item saat sebuah
+// baris di daftar task diklik.
+let sectionMembers = [];
 
 async function main(){
   let masterRows;
@@ -577,7 +702,7 @@ async function main(){
 
   const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0);
   const sectionsHtml = [];
-  const sectionMembers = [];
+  sectionMembers = [];
   let introHtml = "";
 
   for (let c = 1; c < numCols; c++){
