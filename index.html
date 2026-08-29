@@ -175,34 +175,19 @@
   .task-list li:last-child{border-bottom:1px solid var(--line);}
 
   /* leadership block (Section Head / Manager / Senior Manager) — tampil di
-     bagian bawah setiap section, terpisah dari daftar task bernomor */
+     bagian paling bawah popup "Our Team", terpisah dari kartu anggota biasa.
+     flex-basis:100% memaksa blok ini selalu menjadi baris penuh tersendiri
+     saat diletakkan di dalam .card-grid (yang berbasis flexbox). */
   .leaders-block{
+    flex:1 0 100%;
     margin-top:22px;padding-top:20px;
     border-top:1px dashed var(--line);
   }
   .leaders-heading{
     font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;
+    width:100%;
   }
-  .leaders-grid{ display:flex;flex-wrap:wrap;gap:10px; }
-  .leader-card{
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    flex:1 1 220px;min-width:200px;
-    background:var(--surface);border:1px solid var(--line);border-radius:10px;
-    padding:12px 16px;cursor:pointer;
-    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
-  }
-  .leader-card:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 3px 10px rgba(11,42,74,0.08); }
-  .leader-info{ display:flex;flex-direction:column;gap:3px;min-width:0; }
-  .leader-role{
-    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--accent-warm-dark);
-  }
-  .leader-name{
-    font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  .leader-actions{ display:flex;gap:6px;flex:none; }
   .task-link{
     display:flex;align-items:center;gap:16px;
     padding:15px 4px;
@@ -268,9 +253,14 @@
     margin-bottom:26px;
   }
 
+  /* Flexbox + justify-content:center supaya kartu menyesuaikan jumlah
+     anggota tim dan selalu rata tengah (kiri-kanan seimbang), termasuk
+     saat baris terakhir tidak penuh — beda dengan CSS grid yang akan
+     merapatkan sisa kartu ke kiri. */
   .card-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(198px,1fr));
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
     gap:18px;
   }
   .card{
@@ -281,6 +271,8 @@
     padding:20px 14px 18px;
     display:flex;flex-direction:column;align-items:center;text-align:center;
     box-shadow:0 1px 3px rgba(43,47,78,0.05);
+    flex:1 1 198px;
+    max-width:240px;
   }
   .card::before,.card::after{
     content:"";position:absolute;top:10px;width:7px;height:7px;
@@ -570,6 +562,13 @@ function isValidEmail(str){
 const EMAIL_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>`;
 const WA_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
 
+// Jabatan/posisi yang diperlakukan sebagai "leader" (tidak peka besar-kecil
+// huruf) — dikecualikan dari daftar task bernomor dan hanya ditampilkan di
+// popup "Our Team" sebagai blok "Person In Charge". Urutan array menentukan
+// urutan tampil: Section Head -> Manager -> Senior Manager.
+const LEADER_TITLES = ["section head","manager","senior manager"];
+const normJabatan = (j) => (j || "").toLowerCase().trim();
+
 function initials(name){
   return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
 }
@@ -583,20 +582,13 @@ function escapeHtml(str){
 function buildSection(idx, sheetKey, header, subheader, members, career){
   const secId = `sec-${idx}`;
 
-  // Jabatan/posisi yang diperlakukan sebagai "leader" — ditampilkan terpisah
-  // di bagian bawah tiap section, bukan sebagai item bernomor di daftar task.
-  const LEADER_TITLES = ["senior manager","manager","section head"];
-  const normJabatan = (j) => (j || "").toLowerCase().trim();
-
+  // Jabatan/posisi yang diperlakukan sebagai "leader" — tidak ikut dihitung/
+  // tampil sebagai item bernomor di daftar task. Hanya muncul di popup
+  // "Our Team" sebagai blok "Person In Charge" (lihat openModal / LEADER_TITLES).
   const regularIdx = [];
-  const leaderIdx = [];
   members.forEach((m,i) => {
-    if (LEADER_TITLES.includes(normJabatan(m.jabatan))) leaderIdx.push(i);
-    else regularIdx.push(i);
+    if (!LEADER_TITLES.includes(normJabatan(m.jabatan))) regularIdx.push(i);
   });
-  leaderIdx.sort((a,b) =>
-    LEADER_TITLES.indexOf(normJabatan(members[a].jabatan)) - LEADER_TITLES.indexOf(normJabatan(members[b].jabatan))
-  );
 
   const taskLinks = regularIdx.map((i, displayPos) => {
     const m = members[i];
@@ -617,31 +609,6 @@ function buildSection(idx, sheetKey, header, subheader, members, career){
     </li>`;
   }).join("");
 
-  const leadersHtml = leaderIdx.length === 0 ? "" : `
-    <div class="leaders-block">
-      <div class="leaders-heading">Person In Charge</div>
-      <div class="leaders-grid">
-        ${leaderIdx.map(i => {
-          const m = members[i];
-          const waDigits = formatWaLink(m.whatsapp);
-          const emailBtn = isValidEmail(m.email)
-            ? `<a class="icon-btn icon-email" href="mailto:${encodeURIComponent(m.email.trim())}" title="Email: ${escapeHtml(m.email)}" aria-label="Kirim email ke ${escapeHtml(m.email)}">${EMAIL_SVG}</a>`
-            : "";
-          const waBtn = waDigits
-            ? `<a class="icon-btn icon-wa" href="https://wa.me/${waDigits}" target="_blank" rel="noopener" title="WhatsApp: ${escapeHtml(m.whatsapp)}" aria-label="Chat WhatsApp ${escapeHtml(m.whatsapp)}">${WA_SVG}</a>`
-            : "";
-          return `
-          <div class="leader-card" data-sec="${idx}" data-member="${i}" role="button" tabindex="0" aria-haspopup="dialog">
-            <div class="leader-info">
-              <div class="leader-role">${escapeHtml(m.jabatan)}</div>
-              <div class="leader-name">${escapeHtml(m.pic || "-")}</div>
-            </div>
-            <div class="leader-actions">${emailBtn}${waBtn}</div>
-          </div>`;
-        }).join("")}
-      </div>
-    </div>`;
-
   const empty = members.length === 0;
   return `
   <section class="section" id="${secId}" data-career="${escapeHtml(career || "")}" data-sheet="${escapeHtml(sheetKey)}">
@@ -653,16 +620,12 @@ function buildSection(idx, sheetKey, header, subheader, members, career){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
           Our Team
         </button>
-        <ul class="task-list">${taskLinks}</ul>
-        ${leadersHtml}`}
+        <ul class="task-list">${taskLinks}</ul>`}
   </section>`;
 }
 
-function openModal(header, sheetKey, members){
-  document.getElementById("modal-title").textContent = header;
-  document.getElementById("modal-sub").textContent = `${sheetKey} — ${members.length} anggota tim`;
-  const grid = document.getElementById("modal-grid");
-  grid.innerHTML = members.map(m => `
+function memberCardHtml(m){
+  return `
     <div class="card">
       ${m.dp
         ? `<img class="dp" src="${escapeHtml(toDirectImageUrl(m.dp))}" alt="${escapeHtml(m.pic)}" onerror="this.outerHTML='<div class=&quot;dp fallback&quot;>${initials(m.pic)}</div>'">`
@@ -673,8 +636,29 @@ function openModal(header, sheetKey, members){
       <div class="task">${escapeHtml(m.task || "-")}</div>
       <hr>
       <div class="task-desc">${escapeHtml(m.desc || "-")}</div>
-    </div>
-  `).join("");
+    </div>`;
+}
+
+function openModal(header, sheetKey, members){
+  document.getElementById("modal-title").textContent = header;
+  document.getElementById("modal-sub").textContent = `${sheetKey} — ${members.length} anggota tim`;
+
+  // Pisahkan anggota biasa dari leader (Senior Manager/Manager/Section Head).
+  // Leader ditampilkan terpisah, di blok "Person In Charge" paling bawah,
+  // urut sesuai hierarki: Section Head -> Manager -> Senior Manager.
+  const regular = members.filter(m => !LEADER_TITLES.includes(normJabatan(m.jabatan)));
+  const leaders = members
+    .filter(m => LEADER_TITLES.includes(normJabatan(m.jabatan)))
+    .sort((a,b) => LEADER_TITLES.indexOf(normJabatan(a.jabatan)) - LEADER_TITLES.indexOf(normJabatan(b.jabatan)));
+
+  const grid = document.getElementById("modal-grid");
+  grid.innerHTML = regular.map(memberCardHtml).join("")
+    + (leaders.length === 0 ? "" : `
+      <div class="leaders-block">
+        <div class="leaders-heading">Person In Charge</div>
+        <div class="card-grid">${leaders.map(memberCardHtml).join("")}</div>
+      </div>`);
+
   document.getElementById("modal-overlay").classList.add("open");
 }
 
@@ -728,7 +712,7 @@ document.getElementById("member-modal-overlay").addEventListener("click", (e) =>
 // (mailto:/wa.me) tanpa ikut membuka popup.
 document.addEventListener("click", (e) => {
   if (e.target.closest(".icon-btn")) return;
-  const link = e.target.closest(".task-link, .leader-card");
+  const link = e.target.closest(".task-link");
   if (!link) return;
   const sec = link.dataset.sec;
   const idx = link.dataset.member;
@@ -740,7 +724,7 @@ document.addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== " ") return;
-  const link = e.target.closest && e.target.closest(".task-link, .leader-card");
+  const link = e.target.closest && e.target.closest(".task-link");
   if (!link) return;
   e.preventDefault();
   link.click();
