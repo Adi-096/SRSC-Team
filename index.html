@@ -442,6 +442,12 @@
 const SPREADSHEET_ID = "1l6ZYSZA-lv3VrEFM8zMVWG_HPRf8uLmsAeimEf_sf9s";
 const MASTER_SHEET_NAME = "Master";
 
+// Halaman mengecek ulang Google Sheet sumber secara berkala. Kalau tidak ada
+// perubahan data, tampilan dibiarkan persis seperti semula (tidak ada reload,
+// tidak ada kedipan). Kalau ada perubahan, tampilan diperbarui secara diam-diam
+// di tempat, tanpa memuat ulang halaman.
+const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 menit
+
 /* =========================================================================
    ATURAN STRUKTUR SHEET (baca ini kalau halaman menampilkan pesan error)
 
@@ -779,19 +785,31 @@ function renderError(message, hints){
 // "Our Team" (grid semua anggota) maupun popup detail per-item saat sebuah
 // baris di daftar task diklik.
 let sectionMembers = [];
+let lastDataSignature = null; // dipakai untuk mendeteksi apakah data sumber berubah
 
-async function main(){
+async function loadAndRender(isInitial){
+  // Kalau ada popup yang sedang dibuka pengguna, tunda dulu pengecekan diam-diam
+  // ini ke siklus berikutnya — supaya tidak mengganti isi halaman di tengah
+  // interaksi pengguna.
+  if (!isInitial && document.querySelector(".modal-overlay.open")) return;
+
+  const sigParts = [];
   let masterRows;
   try {
     masterRows = await fetchSheet(MASTER_SHEET_NAME);
   } catch (err){
-    renderError(`Tidak bisa membaca sheet "${MASTER_SHEET_NAME}".`, [
-      `Pastikan nama tab persis <code>${MASTER_SHEET_NAME}</code>.`,
-      `Pastikan sharing sudah "Anyone with the link can view".`,
-      `Pesan asli: ${escapeHtml(err.message)}`
-    ]);
+    if (isInitial){
+      renderError(`Tidak bisa membaca sheet "${MASTER_SHEET_NAME}".`, [
+        `Pastikan nama tab persis <code>${MASTER_SHEET_NAME}</code>.`,
+        `Pastikan sharing sudah "Anyone with the link can view".`,
+        `Pesan asli: ${escapeHtml(err.message)}`
+      ]);
+    }
+    // Saat pengecekan diam-diam gagal (mis. jaringan sedang bermasalah),
+    // tampilan yang sudah ada dibiarkan apa adanya; dicoba lagi siklus berikutnya.
     return;
   }
+  sigParts.push(JSON.stringify(masterRows));
 
   const labelOf = (r) => (r[0] || "").toLowerCase().trim();
   const sheetRow  = masterRows.find(r => labelOf(r) === "sheet");
@@ -800,18 +818,21 @@ async function main(){
   const careerRow = masterRows.find(r => labelOf(r).includes("career") || labelOf(r).includes("kategori"));
 
   if (!sheetRow || !judulRow){
-    renderError(`Sheet "${MASTER_SHEET_NAME}" ditemukan, tapi baris label "Sheet" dan/atau "Judul" di kolom A tidak ketemu.`, [
-      `Baris pertama di kolom A harus berisi teks <code>Sheet</code>, baris berikutnya <code>Judul</code>.`
-    ]);
+    if (isInitial){
+      renderError(`Sheet "${MASTER_SHEET_NAME}" ditemukan, tapi baris label "Sheet" dan/atau "Judul" di kolom A tidak ketemu.`, [
+        `Baris pertama di kolom A harus berisi teks <code>Sheet</code>, baris berikutnya <code>Judul</code>.`
+      ]);
+    }
     return;
   }
 
   const numCols = Math.max(sheetRow.length, judulRow.length, subRow ? subRow.length : 0);
   const sectionsHtml = [];
-  sectionMembers = [];
+  const newSectionMembers = [];
   const careerTabs = []; // daftar kategori unik (Career), urut sesuai kemunculan pertama di sheet Master
   const careerSections = {}; // career -> daftar {id, label} section di dalamnya, untuk sub-tab
   let introHtml = "";
+  let fetchFailed = false;
 
   for (let c = 1; c < numCols; c++){
     const sectionKey = (sheetRow[c] || "").trim();
@@ -833,14 +854,19 @@ async function main(){
     try {
       rows = await fetchSheet(sectionKey);
     } catch (err){
-      sectionsHtml.push(`
-        <div class="notice error">
-          <strong>Gagal memuat sheet "${escapeHtml(sectionKey)}".</strong><br>
-          Cek apakah nama tab di Google Sheet sama persis dengan <code>${escapeHtml(sectionKey)}</code>.<br>
-          Pesan asli: ${escapeHtml(err.message)}
-        </div>`);
+      fetchFailed = true;
+      sigParts.push(`${sectionKey}:ERROR:${err.message}`);
+      if (isInitial){
+        sectionsHtml.push(`
+          <div class="notice error">
+            <strong>Gagal memuat sheet "${escapeHtml(sectionKey)}".</strong><br>
+            Cek apakah nama tab di Google Sheet sama persis dengan <code>${escapeHtml(sectionKey)}</code>.<br>
+            Pesan asli: ${escapeHtml(err.message)}
+          </div>`);
+      }
       continue;
     }
+    sigParts.push(`${sectionKey}:${JSON.stringify(rows)}`);
 
     if (rows.length < 2){
       sectionsHtml.push(`<div class="notice">Sheet "${escapeHtml(sectionKey)}" belum berisi data anggota tim.</div>`);
@@ -858,8 +884,8 @@ async function main(){
       dp:      (cols.dp >= 0 ? r[cols.dp] : "") || "",
     })).filter(m => m.pic || m.task || m.email || m.whatsapp || m.dp);
 
-    sectionMembers.push(members);
-    const secIdx = sectionMembers.length - 1;
+    newSectionMembers.push(members);
+    const secIdx = newSectionMembers.length - 1;
     sectionsHtml.push(buildSection(secIdx, sectionKey, header, subheader, members, career));
     if (career){
       (careerSections[career] = careerSections[career] || []).push({
@@ -869,10 +895,32 @@ async function main(){
     }
   }
 
+  // Saat pengecekan diam-diam (bukan pemuatan awal) dan salah satu sheet gagal
+  // diambil, jangan timpa tampilan yang sudah ada dengan hasil yang tidak
+  // lengkap — biarkan seperti semula, dicoba lagi di siklus berikutnya.
+  if (!isInitial && fetchFailed) return;
+
   if (sectionsHtml.length === 0 && !introHtml){
-    renderError(`Sheet "${MASTER_SHEET_NAME}" tidak berisi kolom section yang valid (kolom B dst. pada baris "Sheet" harus diisi nama tab).`);
+    if (isInitial){
+      renderError(`Sheet "${MASTER_SHEET_NAME}" tidak berisi kolom section yang valid (kolom B dst. pada baris "Sheet" harus diisi nama tab).`);
+    }
     return;
   }
+
+  // Bandingkan dengan data terakhir yang ditampilkan. Kalau tidak ada
+  // perubahan sama sekali, hentikan di sini — tampilan dibiarkan persis
+  // seperti semula, tanpa render ulang apapun (benar-benar tidak terlihat).
+  const signature = sigParts.join("\u241F");
+  if (!isInitial && signature === lastDataSignature) return;
+  lastDataSignature = signature;
+  sectionMembers = newSectionMembers;
+
+  // Simpan state tampilan saat ini (posisi scroll + tab/sub-tab yang aktif)
+  // supaya setelah render ulang, sudut pandang pengguna tidak "melompat"
+  // atau balik ke kondisi awal.
+  const prevScrollY = isInitial ? null : window.scrollY;
+  const prevActiveCareer = document.querySelector(".tab-btn.active")?.dataset.career || null;
+  const prevActiveSecId = document.querySelector(".subtab-btn.active")?.dataset.secId || null;
 
   document.getElementById("app").innerHTML = introHtml + sectionsHtml.join("");
 
@@ -951,6 +999,42 @@ async function main(){
       const sheetName = btn.closest(".section").dataset.sheet || "";
       openModal(headerEl.textContent, sheetName, members);
     });
+  });
+
+  // Kembalikan filter tab/sub-tab yang tadinya aktif (kalau masih ada di
+  // data terbaru), lalu kembalikan posisi scroll — supaya pembaruan diam-diam
+  // ini tidak terasa mengganggu buat pengguna yang sedang membaca halaman.
+  if (!isInitial){
+    if (prevActiveCareer){
+      const careerBtn = tabsWrap.querySelector(`.tab-btn[data-career="${CSS.escape(prevActiveCareer)}"]`);
+      if (careerBtn){
+        careerBtn.click();
+        if (prevActiveSecId){
+          const secBtn = document.querySelector(`.subtab-btn[data-sec-id="${CSS.escape(prevActiveSecId)}"]`);
+          if (secBtn) secBtn.click();
+        }
+      }
+    }
+    if (prevScrollY !== null) window.scrollTo(0, prevScrollY);
+  }
+}
+
+async function main(){
+  await loadAndRender(true);
+
+  // Cek pembaruan data secara berkala. Selama tidak ada perubahan di Google
+  // Sheet sumber, tampilan tidak diapa-apakan sama sekali (tidak reload,
+  // tidak ada indikator loading) — benar-benar tidak terlihat oleh pengguna.
+  setInterval(() => { loadAndRender(false).catch(() => {}); }, REFRESH_INTERVAL_MS);
+
+  // Saat pengguna kembali ke tab ini setelah sempat berpindah, lakukan satu
+  // kali pengecekan tambahan (tetap diam-diam) — supaya perubahan data lebih
+  // cepat terlihat tanpa harus menunggu penuh 15 menit, tanpa menambah beban
+  // permintaan saat halaman tidak sedang dilihat.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible"){
+      loadAndRender(false).catch(() => {});
+    }
   });
 }
 
