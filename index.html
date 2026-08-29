@@ -65,7 +65,7 @@
     background:var(--bg);
   }
   .tabs-scroll{
-    display:flex; gap:8px; align-items:center;
+    display:flex; gap:8px; align-items:center; justify-content:center;
     overflow-x:auto; -webkit-overflow-scrolling:touch;
     padding:14px 0; margin-bottom:6px;
     border-bottom:1px solid var(--line);
@@ -93,7 +93,7 @@
      section spesifik (klik lagi tombol yang aktif untuk kembali ke semua). */
   .subtabs-scroll{
     display:none;
-    gap:6px; align-items:center;
+    gap:6px; align-items:center; justify-content:center;
     overflow-x:auto; -webkit-overflow-scrolling:touch;
     padding:0 0 14px;
   }
@@ -306,14 +306,14 @@
   .card::before{left:10px;}
   .card::after{right:10px;}
   .card .dp{
-    width:64px;height:64px;border-radius:50%;
+    width:92px;height:92px;border-radius:50%;
     object-fit:cover;background:var(--surface-soft);
     border:1px solid var(--line);
     margin-bottom:14px;
   }
   .card .dp.fallback{
     display:flex;align-items:center;justify-content:center;
-    font-family:'Fraunces',serif;font-size:22px;font-weight:600;
+    font-family:'Fraunces',serif;font-size:30px;font-weight:600;
     color:var(--primary);
     background: var(--primary-soft);
   }
