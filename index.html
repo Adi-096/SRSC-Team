@@ -569,6 +569,11 @@ const WA_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 const LEADER_TITLES = ["section head","manager","senior manager"];
 const normJabatan = (j) => (j || "").toLowerCase().trim();
 
+// Jabatan yang mengandung kata "Group" (mis. "Group Penjadwalan") — baris ini
+// tetap tampil sebagai item bernomor di daftar task, tapi disembunyikan dari
+// popup "Our Team" (grid semua anggota).
+const isGroupRow = (j) => normJabatan(j).includes("group");
+
 function initials(name){
   return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
 }
@@ -640,14 +645,18 @@ function memberCardHtml(m){
 }
 
 function openModal(header, sheetKey, members){
+  // Baris dengan Jabatan mengandung "Group" tidak ikut ditampilkan di popup
+  // "Our Team" (tapi tetap ada di daftar task pada halaman utama).
+  const teamMembers = members.filter(m => !isGroupRow(m.jabatan));
+
   document.getElementById("modal-title").textContent = header;
-  document.getElementById("modal-sub").textContent = `${sheetKey} — ${members.length} anggota tim`;
+  document.getElementById("modal-sub").textContent = `${sheetKey} — ${teamMembers.length} anggota tim`;
 
   // Pisahkan anggota biasa dari leader (Senior Manager/Manager/Section Head).
   // Leader ditampilkan terpisah, di blok "Person In Charge" paling bawah,
   // urut sesuai hierarki: Section Head -> Manager -> Senior Manager.
-  const regular = members.filter(m => !LEADER_TITLES.includes(normJabatan(m.jabatan)));
-  const leaders = members
+  const regular = teamMembers.filter(m => !LEADER_TITLES.includes(normJabatan(m.jabatan)));
+  const leaders = teamMembers
     .filter(m => LEADER_TITLES.includes(normJabatan(m.jabatan)))
     .sort((a,b) => LEADER_TITLES.indexOf(normJabatan(a.jabatan)) - LEADER_TITLES.indexOf(normJabatan(b.jabatan)));
 
