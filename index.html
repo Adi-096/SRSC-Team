@@ -399,9 +399,92 @@
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
   }
+
+  /* ===== login gate ===== */
+  #login-gate{
+    position:fixed;inset:0;z-index:999;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(1100px 560px at 12% -8%, rgba(14,168,224,0.10), transparent 58%),
+      radial-gradient(900px 520px at 100% 0%, rgba(10,61,98,0.14), transparent 55%),
+      var(--bg);
+  }
+  #login-gate.hidden{display:none;}
+  .login-card{
+    width:100%;max-width:400px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 10px 30px rgba(11,42,74,0.10);
+    padding:32px 28px;
+    text-align:center;
+  }
+  .login-card .login-bar{
+    height:4px;width:56px;border-radius:4px;margin:0 auto 20px;
+    background:var(--gradient-brand);
+  }
+  .login-card h1{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:22px;line-height:1.3;margin:0 0 8px;color:var(--ink);
+  }
+  .login-card p.login-desc{
+    font-family:'Work Sans',sans-serif;font-size:13.5px;color:var(--ink-soft);
+    line-height:1.6;margin:0 0 22px;
+  }
+  .login-card input[type="email"]{
+    width:100%;
+    font-family:'Work Sans',sans-serif;font-size:14px;
+    padding:12px 14px;border-radius:8px;
+    border:1px solid var(--line);
+    outline:none;color:var(--ink);
+    margin-bottom:12px;
+    transition:border-color .15s ease;
+  }
+  .login-card input[type="email"]:focus{ border-color:var(--accent); }
+  .login-card button{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:#fff;background:var(--primary);
+    border:1px solid var(--primary);
+    padding:12px 16px;border-radius:8px;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .login-card button:hover{ background:var(--primary-dark); }
+  .login-card button:active{ transform:scale(.99); }
+  .login-card .login-error{
+    display:none;
+    font-family:'Work Sans',sans-serif;font-size:12.5px;
+    color:#B3401F;background:#FCEEE9;
+    border:1px solid #F0C9BC;border-radius:8px;
+    padding:10px 12px;margin-bottom:12px;
+    text-align:left;line-height:1.5;
+  }
+  .login-card .login-error.show{ display:block; }
+  .login-card .login-note{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;
+    color:var(--ink-faint);letter-spacing:.04em;
+    margin-top:18px;
+  }
 </style>
 </head>
 <body>
+
+<div id="login-gate">
+  <div class="login-card">
+    <div class="login-bar"></div>
+    <h1>Sign In Required</h1>
+    <p class="login-desc">Restricted to BINUS employees. Log in with your email to proceed..</p>
+    <div class="login-error" id="login-error"></div>
+    <form id="login-form" autocomplete="off">
+      <input type="email" id="login-email" placeholder="nama.staff@binus.edu" required>
+      <button type="submit">Masuk</button>
+    </form>
+    <div class="login-note">Restricted to BINUS employees.</div>
+  </div>
+</div>
 
 <div class="top-accent"></div>
 <div class="wrap">
@@ -1040,6 +1123,74 @@ async function loadAndRender(isInitial){
   }
 }
 
+/* =========================================================================
+   LOGIN GATE — hanya email domain @binus.edu (karyawan) yang boleh masuk.
+   Domain mahasiswa @binus.ac.id ditolak secara eksplisit dengan pesan
+   khusus. Status login disimpan di localStorage supaya pengguna yang sudah
+   pernah masuk tidak perlu login ulang setiap kali membuka halaman.
+   CATATAN: ini hanya penjagaan tampilan (UI gate) di sisi klien, bukan
+   keamanan data sesungguhnya — sumber data (Google Sheet) tetap bisa
+   diakses langsung lewat URL CSV publik oleh siapa pun yang mengetahuinya.
+   ========================================================================= */
+const ALLOWED_DOMAIN = "binus.edu";
+const LOGIN_STORAGE_KEY = "srsc_login_email";
+
+function getEmailDomain(email){
+  const parts = String(email || "").trim().toLowerCase().split("@");
+  return parts.length === 2 ? parts[1] : "";
+}
+
+function showLoginError(message){
+  const el = document.getElementById("login-error");
+  el.textContent = message;
+  el.classList.add("show");
+}
+
+function hideLoginGate(){
+  document.getElementById("login-gate").classList.add("hidden");
+}
+
+function tryAutoLogin(){
+  const saved = localStorage.getItem(LOGIN_STORAGE_KEY);
+  if (saved && getEmailDomain(saved) === ALLOWED_DOMAIN){
+    hideLoginGate();
+    main();
+    return true;
+  }
+  return false;
+}
+
+document.getElementById("login-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const emailInput = document.getElementById("login-email");
+  const email = emailInput.value.trim();
+
+  if (!isValidEmail(email)){
+    showLoginError("Masukkan alamat email yang valid.");
+    return;
+  }
+
+  const domain = getEmailDomain(email);
+
+  if (domain === "binus.ac.id"){
+    showLoginError("Domain mahasiswa (@binus.ac.id) tidak diizinkan mengakses halaman ini. Halaman ini khusus untuk karyawan BINUS dengan email @binus.edu.");
+    return;
+  }
+
+  if (domain !== ALLOWED_DOMAIN){
+    showLoginError(`Akses ditolak. Halaman ini hanya untuk email domain @${ALLOWED_DOMAIN}.`);
+    return;
+  }
+
+  localStorage.setItem(LOGIN_STORAGE_KEY, email);
+  hideLoginGate();
+  main();
+});
+
+if (!tryAutoLogin()){
+  document.getElementById("login-email").focus();
+}
+
 async function main(){
   await loadAndRender(true);
 
@@ -1058,8 +1209,6 @@ async function main(){
     }
   });
 }
-
-main();
 </script>
 </body>
 </html>
