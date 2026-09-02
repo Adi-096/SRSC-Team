@@ -1178,7 +1178,7 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   }
 
   if (domain !== ALLOWED_DOMAIN){
-    showLoginError(`Akses ditolak. Halaman ini hanya untuk email domain @${ALLOWED_DOMAIN}.`);
+    showLoginError(`Access denied. Please use a valid email address.`);
     return;
   }
 
