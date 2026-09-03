@@ -525,6 +525,12 @@
 const SPREADSHEET_ID = "1l6ZYSZA-lv3VrEFM8zMVWG_HPRf8uLmsAeimEf_sf9s";
 const MASTER_SHEET_NAME = "Master";
 
+// URL Web App Google Apps Script yang bertugas MENULIS baris baru ke Sheet
+// "Logs" setiap kali ada yang berhasil sign in. Wajib diisi (lihat panduan
+// pembuatan Apps Script yang saya berikan terpisah) — kalau dibiarkan kosong,
+// pencatatan log akan dilewati begitu saja tanpa error.
+const LOG_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwuoasOaaZoVpE34eYW5zpzdzcQ3KZeZtHeIj_Qft0DYldVo7neyFFreatPYXLM_zkV9A/exec";
+
 // Halaman mengecek ulang Google Sheet sumber secara berkala. Kalau tidak ada
 // perubahan data, tampilan dibiarkan persis seperti semula (tidak ada reload,
 // tidak ada kedipan). Kalau ada perubahan, tampilan diperbarui secara diam-diam
@@ -1135,6 +1141,24 @@ async function loadAndRender(isInitial){
 const ALLOWED_DOMAIN = "binus.edu";
 const LOGIN_STORAGE_KEY = "srsc_login_email";
 
+// Kirim catatan "siapa sign in, kapan" ke Sheet "Logs" lewat Apps Script.
+// Dipanggil "fire-and-forget": halaman tidak menunggu ataupun peduli hasil
+// pengiriman ini, jadi kalaupun gagal (mis. tidak ada internet sesaat),
+// proses login pengguna tetap lanjut seperti biasa dan tidak error.
+function logSignIn(email){
+  if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return;
+  fetch(LOG_WEBAPP_URL, {
+    method: "POST",
+    mode: "no-cors", // Apps Script Web App tidak mengizinkan fetch biasa
+                      // dibaca balik hasilnya dari domain lain (CORS). Mode
+                      // ini membuat browser tetap MENGIRIM datanya, hanya
+                      // saja kita tidak bisa membaca balasannya — tidak apa,
+                      // karena kita memang tidak butuh balasan itu.
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ email: email })
+  }).catch(() => { /* diamkan saja kalau gagal, jangan ganggu proses login */ });
+}
+
 function getEmailDomain(email){
   const parts = String(email || "").trim().toLowerCase().split("@");
   return parts.length === 2 ? parts[1] : "";
@@ -1183,6 +1207,7 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   }
 
   localStorage.setItem(LOGIN_STORAGE_KEY, email);
+  logSignIn(email);
   hideLoginGate();
   main();
 });
