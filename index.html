@@ -1141,11 +1141,15 @@ async function loadAndRender(isInitial){
 const ALLOWED_DOMAIN = "binus.edu";
 const LOGIN_STORAGE_KEY = "srsc_login_email";
 
-// Kirim catatan "siapa sign in, kapan" ke Sheet "Logs" lewat Apps Script.
-// Dipanggil "fire-and-forget": halaman tidak menunggu ataupun peduli hasil
-// pengiriman ini, jadi kalaupun gagal (mis. tidak ada internet sesaat),
-// proses login pengguna tetap lanjut seperti biasa dan tidak error.
-function logSignIn(email){
+// Kirim catatan "siapa membuka website, kapan, dan hasilnya apa" ke Sheet
+// "Logs" lewat Apps Script. Dipanggil "fire-and-forget": halaman tidak
+// menunggu ataupun peduli hasil pengiriman ini, jadi kalaupun gagal (mis.
+// tidak ada internet sesaat), proses login pengguna tetap lanjut seperti
+// biasa dan tidak error.
+// Parameter "status" menjelaskan apa yang terjadi: "Berhasil" (sign in
+// sukses), "Ditolak - ..." (email dimasukkan tapi ditolak karena domain
+// salah), atau "Auto-login" (buka lagi, email sudah diingat browser).
+function logSignIn(email, status){
   if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return;
   fetch(LOG_WEBAPP_URL, {
     method: "POST",
@@ -1155,7 +1159,7 @@ function logSignIn(email){
                       // saja kita tidak bisa membaca balasannya — tidak apa,
                       // karena kita memang tidak butuh balasan itu.
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ email: email })
+    body: JSON.stringify({ email: email, status: status || "Berhasil" })
   }).catch(() => { /* diamkan saja kalau gagal, jangan ganggu proses login */ });
 }
 
@@ -1177,6 +1181,7 @@ function hideLoginGate(){
 function tryAutoLogin(){
   const saved = localStorage.getItem(LOGIN_STORAGE_KEY);
   if (saved && getEmailDomain(saved) === ALLOWED_DOMAIN){
+    logSignIn(saved, "Auto-login (sudah pernah sign in)");
     hideLoginGate();
     main();
     return true;
@@ -1197,17 +1202,19 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   const domain = getEmailDomain(email);
 
   if (domain === "binus.ac.id"){
+    logSignIn(email, "Ditolak - domain mahasiswa (@binus.ac.id)");
     showLoginError("Domain mahasiswa (@binus.ac.id) tidak diizinkan mengakses halaman ini. Halaman ini khusus untuk karyawan BINUS dengan email @binus.edu.");
     return;
   }
 
   if (domain !== ALLOWED_DOMAIN){
+    logSignIn(email, "Ditolak - domain tidak diizinkan");
     showLoginError(`Access denied. Please use a valid email address.`);
     return;
   }
 
   localStorage.setItem(LOGIN_STORAGE_KEY, email);
-  logSignIn(email);
+  logSignIn(email, "Berhasil");
   hideLoginGate();
   main();
 });
