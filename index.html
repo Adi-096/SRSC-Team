@@ -1202,13 +1202,13 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   const domain = getEmailDomain(email);
 
   if (domain === "binus.ac.id"){
-    logSignIn(email, "Access denied. Please use a valid email address.");
+    logSignIn(email, "Ditolak - domain mahasiswa (@binus.ac.id)");
     showLoginError("Access denied. Please use a valid email address.");
     return;
   }
 
   if (domain !== ALLOWED_DOMAIN){
-    logSignIn(email, "Access denied. Please use a valid email address.");
+    logSignIn(email, "Ditolak - domain tidak diizinkan");
     showLoginError(`Access denied. Please use a valid email address.`);
     return;
   }
