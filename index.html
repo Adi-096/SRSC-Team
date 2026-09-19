@@ -535,27 +535,27 @@
 
     <!-- STEP 2a: khusus domain @binus.edu -> isi Unit -->
     <form id="unit-form" class="login-step hidden" autocomplete="off">
-      <input type="text" id="login-unit" placeholder="Nama Unit" required>
+      <input type="text" id="login-unit" placeholder="Department/Unit" required>
       <div class="login-actions-row">
-        <button type="button" class="login-back" id="unit-back">&larr; Kembali</button>
-        <button type="submit">Lanjutkan</button>
+        <button type="button" class="login-back" id="unit-back">&larr; Back</button>
+        <button type="submit">Continue</button>
       </div>
     </form>
 
     <!-- STEP 2b: khusus domain @binus.ac.id -> pilih Dosen / Mahasiswa -->
     <div id="role-step" class="login-step hidden">
       <div class="role-choice">
-        <button type="button" class="role-btn" id="role-dosen-btn">Dosen</button>
-        <button type="button" class="role-btn" id="role-mahasiswa-btn">Mahasiswa</button>
+        <button type="button" class="role-btn" id="role-dosen-btn">Lecturer</button>
+        <button type="button" class="role-btn" id="role-mahasiswa-btn">Student</button>
       </div>
-      <button type="button" class="login-back" id="role-back">&larr; Kembali</button>
+      <button type="button" class="login-back" id="role-back">&larr; Back</button>
     </div>
 
     <!-- STEP 3: khusus @binus.ac.id yang memilih Dosen -> isi Kode Dosen -->
     <form id="kodedosen-form" class="login-step hidden" autocomplete="off">
-      <input type="text" id="login-kodedosen" placeholder="Kode Dosen" required>
-      <button type="submit">Lanjutkan</button>
-      <button type="button" class="login-back" id="kodedosen-back">&larr; Kembali</button>
+      <input type="text" id="login-kodedosen" placeholder="Lecturer ID" required>
+      <button type="submit">Continue</button>
+      <button type="button" class="login-back" id="kodedosen-back">&larr; Back</button>
     </form>
 
     <div class="login-note">BINUS Employees Only.</div>
