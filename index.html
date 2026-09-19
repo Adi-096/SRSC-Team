@@ -486,7 +486,12 @@
   .role-choice{
     display:flex;gap:10px;margin-bottom:12px;
   }
-  .role-btn{
+  /* Ditulis sebagai ".login-card button.role-btn" (bukan cuma ".role-btn")
+     supaya lebih spesifik daripada ".login-card button" -- sebelumnya
+     warna tombol Lecturer/Student "kalah" oleh aturan tombol umum, sehingga
+     saat di-hover warna tulisan & warna latar jadi SAMA PERSIS (tulisan
+     hilang). Sekarang gaya outline putih ini dijamin terpakai. */
+  .login-card button.role-btn{
     flex:1;
     font-family:'IBM Plex Mono',monospace;
     font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
@@ -496,15 +501,16 @@
     cursor:pointer;
     transition:background .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
   }
-  .role-btn:hover{ border-color:var(--accent); color:var(--primary-dark); transform:translateY(-1px); }
-  .role-btn:active{ transform:scale(.99); }
-  .login-back{
-    display:inline-block;
-    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;
-    color:var(--ink-faint);cursor:pointer;margin-bottom:12px;
-    background:none;border:none;padding:0;
+  .login-card button.role-btn:hover{ background:var(--surface-soft); border-color:var(--accent); color:var(--primary-dark); transform:translateY(-1px); }
+  .login-card button.role-btn:active{ transform:scale(.99); }
+  /* Sama seperti di atas: ".login-card button.login-back" dibuat lebih
+     spesifik daripada ".login-card button" supaya gaya outline-nya benar2
+     terpakai, dan warna hover tidak lagi bentrok dengan warna latar. */
+  .login-card button.login-back{
+    background:var(--surface);color:var(--ink);
+    border:1px solid var(--line);
   }
-  .login-back:hover{ color:var(--accent); }
+  .login-card button.login-back:hover{ background:var(--surface-soft); border-color:var(--accent); color:var(--primary-dark); }
 
   /* Baris tombol berdampingan (dipakai di Step Unit: Kembali + Lanjutkan
      sejajar, masing-masing setengah lebar). */
@@ -554,8 +560,10 @@
     <!-- STEP 3: khusus @binus.ac.id yang memilih Dosen -> isi Kode Dosen -->
     <form id="kodedosen-form" class="login-step hidden" autocomplete="off">
       <input type="text" id="login-kodedosen" placeholder="Lecturer ID" required>
-      <button type="submit">Continue</button>
-      <button type="button" class="login-back" id="kodedosen-back">&larr; Back</button>
+      <div class="login-actions-row">
+        <button type="button" class="login-back" id="kodedosen-back">&larr; Back</button>
+        <button type="submit">Continue</button>
+      </div>
     </form>
 
     <div class="login-note">BINUS Employees Only.</div>
