@@ -468,6 +468,54 @@
     color:var(--ink-faint);letter-spacing:.04em;
     margin-top:18px;
   }
+
+  /* langkah tambahan (Step 2/3) setelah email tervalidasi: input Unit,
+     pilihan Dosen/Mahasiswa, dan input Kode Dosen. Disembunyikan lewat
+     class "hidden" dan ditampilkan bergantian oleh JS. */
+  .login-step.hidden{ display:none; }
+  .login-card input[type="text"]{
+    width:100%;
+    font-family:'Work Sans',sans-serif;font-size:14px;
+    padding:12px 14px;border-radius:8px;
+    border:1px solid var(--line);
+    outline:none;color:var(--ink);
+    margin-bottom:12px;
+    transition:border-color .15s ease;
+  }
+  .login-card input[type="text"]:focus{ border-color:var(--accent); }
+  .role-choice{
+    display:flex;gap:10px;margin-bottom:12px;
+  }
+  .role-btn{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:12px 10px;border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .role-btn:hover{ border-color:var(--accent); color:var(--primary-dark); transform:translateY(-1px); }
+  .role-btn:active{ transform:scale(.99); }
+  .login-back{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;
+    color:var(--ink-faint);cursor:pointer;margin-bottom:12px;
+    background:none;border:none;padding:0;
+  }
+  .login-back:hover{ color:var(--accent); }
+
+  /* Baris tombol berdampingan (dipakai di Step Unit: Kembali + Lanjutkan
+     sejajar, masing-masing setengah lebar). */
+  .login-actions-row{
+    display:flex;
+    gap:10px;
+  }
+  .login-actions-row button{
+    flex:1;
+    margin-bottom:0;
+  }
 </style>
 </head>
 <body>
@@ -475,13 +523,41 @@
 <div id="login-gate">
   <div class="login-card">
     <div class="login-bar"></div>
-    <h1>Sign In Required</h1>
-    <p class="login-desc">Restricted to BINUS employees. Log in with your email to proceed.</p>
+    <h1 id="login-title">Sign In Required</h1>
+    <p class="login-desc" id="login-desc">Restricted to BINUS employees. Log in with your email to proceed.</p>
     <div class="login-error" id="login-error"></div>
-    <form id="login-form" autocomplete="off">
+
+    <!-- STEP 1: email (semua domain masuk lewat sini dulu) -->
+    <form id="login-form" class="login-step" autocomplete="off">
       <input type="email" id="login-email" placeholder="" required>
       <button type="submit">Sign In</button>
     </form>
+
+    <!-- STEP 2a: khusus domain @binus.edu -> isi Unit -->
+    <form id="unit-form" class="login-step hidden" autocomplete="off">
+      <input type="text" id="login-unit" placeholder="Nama Unit" required>
+      <div class="login-actions-row">
+        <button type="button" class="login-back" id="unit-back">&larr; Kembali</button>
+        <button type="submit">Lanjutkan</button>
+      </div>
+    </form>
+
+    <!-- STEP 2b: khusus domain @binus.ac.id -> pilih Dosen / Mahasiswa -->
+    <div id="role-step" class="login-step hidden">
+      <div class="role-choice">
+        <button type="button" class="role-btn" id="role-dosen-btn">Dosen</button>
+        <button type="button" class="role-btn" id="role-mahasiswa-btn">Mahasiswa</button>
+      </div>
+      <button type="button" class="login-back" id="role-back">&larr; Kembali</button>
+    </div>
+
+    <!-- STEP 3: khusus @binus.ac.id yang memilih Dosen -> isi Kode Dosen -->
+    <form id="kodedosen-form" class="login-step hidden" autocomplete="off">
+      <input type="text" id="login-kodedosen" placeholder="Kode Dosen" required>
+      <button type="submit">Lanjutkan</button>
+      <button type="button" class="login-back" id="kodedosen-back">&larr; Kembali</button>
+    </form>
+
     <div class="login-note">BINUS Employees Only.</div>
   </div>
 </div>
@@ -1138,8 +1214,21 @@ async function loadAndRender(isInitial){
    keamanan data sesungguhnya — sumber data (Google Sheet) tetap bisa
    diakses langsung lewat URL CSV publik oleh siapa pun yang mengetahuinya.
    ========================================================================= */
-const ALLOWED_DOMAIN = "binus.edu";
+// Domain email yang boleh lanjut ke Step 2 (masing-masing dengan alur
+// pertanyaan lanjutan yang berbeda — lihat STEP_EL & handler di bawah).
+const DOMAIN_EDU = "binus.edu";       // karyawan -> ditanya Unit
+const DOMAIN_AC_ID = "binus.ac.id";   // dosen/mahasiswa -> ditanya peran dulu
+
+// Data login yang tersimpan sekarang berupa OBJECT (bukan cuma email polos
+// seperti sebelumnya), supaya Unit / Kode Dosen ikut diingat untuk
+// auto-login berikutnya. Contoh isi:
+//   { email, domain: "binus.edu", unit: "..." }
+//   { email, domain: "binus.ac.id", role: "Dosen", kodeDosen: "..." }
 const LOGIN_STORAGE_KEY = "srsc_login_email";
+
+// Menyimpan sementara email yang sedang diproses di antara Step 1 -> Step 2/3
+// (baru benar-benar dianggap "login" setelah pertanyaan lanjutannya terisi).
+let pendingEmail = "";
 
 // Kirim catatan "siapa membuka website, kapan, dan hasilnya apa" ke Sheet
 // "Logs" lewat Apps Script. Dipanggil "fire-and-forget": halaman tidak
@@ -1147,9 +1236,11 @@ const LOGIN_STORAGE_KEY = "srsc_login_email";
 // tidak ada internet sesaat), proses login pengguna tetap lanjut seperti
 // biasa dan tidak error.
 // Parameter "status" menjelaskan apa yang terjadi: "Berhasil" (sign in
-// sukses), "Ditolak - ..." (email dimasukkan tapi ditolak karena domain
-// salah), atau "Auto-login" (buka lagi, email sudah diingat browser).
-function logSignIn(email, status){
+// sukses), "Ditolak - ..." (email dimasukkan tapi ditolak), atau
+// "Auto-login" (buka lagi, datanya sudah diingat browser).
+// Parameter "extra" adalah isian Unit (untuk @binus.edu) atau Kode Dosen
+// (untuk @binus.ac.id) yang akan ditulis Apps Script ke Kolom D Sheet Logs.
+function logSignIn(email, status, extra){
   if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return;
   fetch(LOG_WEBAPP_URL, {
     method: "POST",
@@ -1159,7 +1250,7 @@ function logSignIn(email, status){
                       // saja kita tidak bisa membaca balasannya — tidak apa,
                       // karena kita memang tidak butuh balasan itu.
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ email: email, status: status || "Berhasil" })
+    body: JSON.stringify({ email: email, status: status || "Berhasil", extra: extra || "" })
   }).catch(() => { /* diamkan saja kalau gagal, jangan ganggu proses login */ });
 }
 
@@ -1174,21 +1265,84 @@ function showLoginError(message){
   el.classList.add("show");
 }
 
+function clearLoginError(){
+  const el = document.getElementById("login-error");
+  el.textContent = "";
+  el.classList.remove("show");
+}
+
 function hideLoginGate(){
   document.getElementById("login-gate").classList.add("hidden");
 }
 
+// Semua elemen langkah (step) dalam kartu login, dipakai untuk gonta-ganti
+// tampilan: sembunyikan semua dulu, baru tampilkan satu yang relevan.
+const STEP_EL = {
+  email: document.getElementById("login-form"),
+  unit: document.getElementById("unit-form"),
+  role: document.getElementById("role-step"),
+  kodeDosen: document.getElementById("kodedosen-form")
+};
+
+function goToStep(stepName){
+  Object.values(STEP_EL).forEach(el => el.classList.add("hidden"));
+  STEP_EL[stepName].classList.remove("hidden");
+  clearLoginError();
+}
+
+function resetToEmailStep(){
+  pendingEmail = "";
+  document.getElementById("login-unit").value = "";
+  document.getElementById("login-kodedosen").value = "";
+  goToStep("email");
+  document.getElementById("login-email").focus();
+}
+
+function completeLogin(state, statusText, extraForLog){
+  localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(state));
+  logSignIn(state.email, statusText, extraForLog);
+  hideLoginGate();
+  main();
+}
+
+// Membaca data login tersimpan di localStorage. Ditulis defensif karena versi
+// lama skrip ini menyimpan email sebagai teks polos (bukan JSON) -- kalau
+// ketemu format lama itu, anggap datanya belum lengkap (bukan auto-login),
+// supaya pengguna lama diminta melengkapi Unit / Kode Dosen sekali lagi.
+function readSavedLoginState(){
+  const raw = localStorage.getItem(LOGIN_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && parsed.email) return parsed;
+    return null;
+  } catch (e){
+    return null;
+  }
+}
+
 function tryAutoLogin(){
-  const saved = localStorage.getItem(LOGIN_STORAGE_KEY);
-  if (saved && getEmailDomain(saved) === ALLOWED_DOMAIN){
-    logSignIn(saved, "Auto-login (sudah pernah sign in)");
+  const saved = readSavedLoginState();
+  if (!saved) return false;
+
+  if (saved.domain === DOMAIN_EDU && saved.unit){
+    logSignIn(saved.email, "Auto-login (sudah pernah sign in)", saved.unit);
     hideLoginGate();
     main();
     return true;
   }
+
+  if (saved.domain === DOMAIN_AC_ID && saved.role === "Dosen" && saved.kodeDosen){
+    logSignIn(saved.email, "Auto-login (sudah pernah sign in)", saved.kodeDosen);
+    hideLoginGate();
+    main();
+    return true;
+  }
+
   return false;
 }
 
+// ---- STEP 1: email ----
 document.getElementById("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const emailInput = document.getElementById("login-email");
@@ -1200,23 +1354,63 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   }
 
   const domain = getEmailDomain(email);
+  pendingEmail = email;
 
-  if (domain === "binus.ac.id"){
-    logSignIn(email, "Ditolak - domain mahasiswa (@binus.ac.id)");
-    showLoginError("Access denied. Please use a valid email address.");
+  if (domain === DOMAIN_EDU){
+    goToStep("unit");
+    document.getElementById("login-unit").focus();
     return;
   }
 
-  if (domain !== ALLOWED_DOMAIN){
-    logSignIn(email, "Ditolak - domain tidak diizinkan");
-    showLoginError(`Access denied. Please use a valid email address.`);
+  if (domain === DOMAIN_AC_ID){
+    goToStep("role");
     return;
   }
 
-  localStorage.setItem(LOGIN_STORAGE_KEY, email);
-  logSignIn(email, "Berhasil");
-  hideLoginGate();
-  main();
+  logSignIn(email, "Ditolak - domain tidak diizinkan");
+  showLoginError("Access denied. Please use a valid email address.");
+});
+
+// ---- STEP 2a: Unit (untuk @binus.edu) ----
+document.getElementById("unit-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const unit = document.getElementById("login-unit").value.trim();
+  if (!unit){
+    showLoginError("Unit wajib diisi.");
+    return;
+  }
+  completeLogin({ email: pendingEmail, domain: DOMAIN_EDU, unit: unit }, "Berhasil", unit);
+});
+document.getElementById("unit-back").addEventListener("click", resetToEmailStep);
+
+// ---- STEP 2b: pilih Dosen / Mahasiswa (untuk @binus.ac.id) ----
+document.getElementById("role-mahasiswa-btn").addEventListener("click", () => {
+  logSignIn(pendingEmail, "Ditolak - Mahasiswa (@binus.ac.id)");
+  resetToEmailStep();
+  showLoginError("Access denied. Please use a valid email address.");
+});
+document.getElementById("role-dosen-btn").addEventListener("click", () => {
+  goToStep("kodeDosen");
+  document.getElementById("login-kodedosen").focus();
+});
+document.getElementById("role-back").addEventListener("click", resetToEmailStep);
+
+// ---- STEP 3: Kode Dosen (untuk @binus.ac.id yang memilih Dosen) ----
+document.getElementById("kodedosen-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const kodeDosen = document.getElementById("login-kodedosen").value.trim();
+  if (!kodeDosen){
+    showLoginError("Kode Dosen wajib diisi.");
+    return;
+  }
+  completeLogin(
+    { email: pendingEmail, domain: DOMAIN_AC_ID, role: "Dosen", kodeDosen: kodeDosen },
+    "Berhasil",
+    kodeDosen
+  );
+});
+document.getElementById("kodedosen-back").addEventListener("click", () => {
+  goToStep("role");
 });
 
 if (!tryAutoLogin()){
