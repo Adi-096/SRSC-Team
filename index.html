@@ -1329,9 +1329,35 @@ function readSavedLoginState(){
   }
 }
 
-function tryAutoLogin(){
+// Menanyakan ke Apps Script: "email ini baru saja dipaksa logout (dicentang
+// 'Hapus Login' di Kolom E sheet Logs) belum?". Dipakai SEBELUM auto-login
+// dipercaya. Kalau gagal cek (mis. tidak ada internet), dianggap TIDAK
+// revoked -- supaya user tetap bisa auto-login seperti biasa, bukan malah
+// terkunci gara-gara koneksi bermasalah.
+async function checkLoginRevoked(email){
+  if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return false;
+  try {
+    const url = LOG_WEBAPP_URL + "?action=checkRevoked&email=" + encodeURIComponent(email);
+    const res = await fetch(url);
+    const data = await res.json();
+    return !!data.revoked;
+  } catch (err){
+    return false;
+  }
+}
+
+async function tryAutoLogin(){
   const saved = readSavedLoginState();
   if (!saved) return false;
+
+  // Kalau email ini baru saja "dihapus login"-nya lewat Sheet, batalkan
+  // auto-login: hapus data tersimpan di browser ini, lalu minta user
+  // login dari awal (Step 1 - email).
+  const revoked = await checkLoginRevoked(saved.email);
+  if (revoked){
+    localStorage.removeItem(LOGIN_STORAGE_KEY);
+    return false;
+  }
 
   if (saved.domain === DOMAIN_EDU && saved.unit){
     logSignIn(saved.email, "Auto-login (sudah pernah sign in)", saved.unit);
@@ -1465,9 +1491,12 @@ document.getElementById("kodedosen-back").addEventListener("click", () => {
   goToStep("role");
 });
 
-if (!tryAutoLogin()){
-  document.getElementById("login-email").focus();
-}
+(async () => {
+  const loggedInOtomatis = await tryAutoLogin();
+  if (!loggedInOtomatis){
+    document.getElementById("login-email").focus();
+  }
+})();
 
 async function main(){
   await loadAndRender(true);
