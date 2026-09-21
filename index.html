@@ -1337,11 +1337,19 @@ function readSavedLoginState(){
 async function checkLoginRevoked(email){
   if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return false;
   try {
-    const url = LOG_WEBAPP_URL + "?action=checkRevoked&email=" + encodeURIComponent(email);
-    const res = await fetch(url);
+    // "&_=" + Date.now() dan cache:"no-store" memaksa browser BENAR-BENAR
+    // bertanya ke server setiap kali, bukan memakai jawaban lama yang
+    // sempat tersimpan di cache (URL-nya kalau tidak begini akan selalu
+    // sama persis untuk email yang sama, jadi rawan di-cache browser).
+    const url = LOG_WEBAPP_URL + "?action=checkRevoked&email=" + encodeURIComponent(email) + "&_=" + Date.now();
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
     return !!data.revoked;
   } catch (err){
+    // Kalau ini muncul di Console (F12), berarti pemanggilan ke Apps
+    // Script gagal -- kemungkinan besar Web App-nya belum di-deploy ulang
+    // (deploy versi lama masih belum punya action "checkRevoked").
+    console.warn("Gagal cek status revoke:", err);
     return false;
   }
 }
@@ -1439,8 +1447,8 @@ document.getElementById("role-back").addEventListener("click", resetToEmailStep)
 async function checkKodeDosenTerdaftar(kodeDosen){
   if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return { ok: true, found: true }; // fallback: jangan blokir kalau URL belum diisi
   try {
-    const url = LOG_WEBAPP_URL + "?action=checkDosen&kode=" + encodeURIComponent(kodeDosen);
-    const res = await fetch(url, { method: "GET" });
+    const url = LOG_WEBAPP_URL + "?action=checkDosen&kode=" + encodeURIComponent(kodeDosen) + "&_=" + Date.now();
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
     const data = await res.json();
     return { ok: true, found: !!data.found };
   } catch (err){
