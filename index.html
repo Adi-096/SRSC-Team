@@ -1421,7 +1421,7 @@ document.getElementById("unit-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const unit = document.getElementById("login-unit").value.trim();
   if (!unit){
-    showLoginError("Unit wajib diisi.");
+    showLoginError("Department/Unit cannot be empty.");
     return;
   }
   completeLogin({ email: pendingEmail, domain: DOMAIN_EDU, unit: unit }, "Berhasil", unit);
@@ -1464,7 +1464,7 @@ document.getElementById("kodedosen-form").addEventListener("submit", async (e) =
   e.preventDefault();
   const kodeDosen = document.getElementById("login-kodedosen").value.trim();
   if (!kodeDosen){
-    showLoginError("Kode Dosen wajib diisi.");
+    showLoginError("Lecturer code cannot be empty.");
     return;
   }
 
@@ -1482,13 +1482,13 @@ document.getElementById("kodedosen-form").addEventListener("submit", async (e) =
   submitBtn.textContent = originalLabel;
 
   if (!result.ok){
-    showLoginError("Gagal memeriksa Kode Dosen. Periksa koneksi internet Anda, lalu coba lagi.");
+    showLoginError("Failed to verify lecturer code. Please check your internet connection and try again.");
     return;
   }
 
   if (!result.found){
     logSignIn(pendingEmail, "Ditolak", kodeDosen, "Kode Dosen tidak ditemukan");
-    showLoginError("Access denied. Kode Dosen tidak ditemukan.");
+    showLoginError("Access denied. Lecturer code not found.");
     return;
   }
 
