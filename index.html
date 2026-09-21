@@ -1403,14 +1403,58 @@ document.getElementById("role-dosen-btn").addEventListener("click", () => {
 });
 document.getElementById("role-back").addEventListener("click", resetToEmailStep);
 
+// Mengecek apakah suatu Kode Dosen benar-benar terdaftar di Sheet
+// "Data Dosen" (Kolom A), dengan bertanya ke Apps Script (GET, bukan
+// fire-and-forget seperti logSignIn -- di sini kita BUTUH jawabannya).
+// Mengembalikan Promise<boolean>: true kalau ketemu, false kalau tidak
+// ketemu ATAU kalau terjadi error jaringan (supaya user tidak nyangkut,
+// error jaringan dianggap "tidak ketemu" lalu ditampilkan pesan yang
+// membedakan keduanya lewat parameter networkError pada pemanggilnya).
+async function checkKodeDosenTerdaftar(kodeDosen){
+  if (!LOG_WEBAPP_URL || LOG_WEBAPP_URL.includes("PASTE_URL")) return { ok: true, found: true }; // fallback: jangan blokir kalau URL belum diisi
+  try {
+    const url = LOG_WEBAPP_URL + "?action=checkDosen&kode=" + encodeURIComponent(kodeDosen);
+    const res = await fetch(url, { method: "GET" });
+    const data = await res.json();
+    return { ok: true, found: !!data.found };
+  } catch (err){
+    return { ok: false, found: false }; // ok:false = gagal cek (bukan berarti tidak terdaftar)
+  }
+}
+
 // ---- STEP 3: Kode Dosen (untuk @binus.ac.id yang memilih Dosen) ----
-document.getElementById("kodedosen-form").addEventListener("submit", (e) => {
+document.getElementById("kodedosen-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const kodeDosen = document.getElementById("login-kodedosen").value.trim();
   if (!kodeDosen){
     showLoginError("Kode Dosen wajib diisi.");
     return;
   }
+
+  // Nonaktifkan tombol + ganti teksnya sementara, supaya user tahu sedang
+  // dicek dan tidak klik dobel selagi menunggu jawaban dari Apps Script.
+  const submitBtn = document.querySelector("#kodedosen-form button[type='submit']");
+  const originalLabel = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Checking...";
+  clearLoginError();
+
+  const result = await checkKodeDosenTerdaftar(kodeDosen);
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = originalLabel;
+
+  if (!result.ok){
+    showLoginError("Gagal memeriksa Kode Dosen. Periksa koneksi internet Anda, lalu coba lagi.");
+    return;
+  }
+
+  if (!result.found){
+    logSignIn(pendingEmail, "Ditolak - Kode Dosen tidak ditemukan", kodeDosen);
+    showLoginError("Access denied. Kode Dosen tidak ditemukan.");
+    return;
+  }
+
   completeLogin(
     { email: pendingEmail, domain: DOMAIN_AC_ID, role: "Dosen", kodeDosen: kodeDosen },
     "Berhasil",
