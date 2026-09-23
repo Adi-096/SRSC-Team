@@ -1311,7 +1311,10 @@ function resetToEmailStep(){
 
 function completeLogin(state, statusText, extraForLog){
   localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(state));
-  logSignIn(state.email, statusText, extraForLog);
+  // Login pertama kali (status "Berhasil") dikasih keterangan "disimpan" --
+  // supaya di sheet jelas ini bukan baris kosong, tapi memang login ini yang
+  // baru disimpan browser-nya (untuk dipakai auto-login berikutnya).
+  logSignIn(state.email, statusText, extraForLog, "disimpan");
   hideLoginGate();
   main();
 }
