@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheduling Team</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://adi-096.github.io/Scheduling-Team/">
+<!-- Cadangan bila JavaScript dimatikan -->
+<meta http-equiv="refresh" content="0; url=https://adi-096.github.io/Scheduling-Team/">
+<style>
+  :root{
+    --bg:#F2F5F9; --surface:#FFFFFF; --ink:#0B2A4A; --muted:#4A6178;
+    --primary:#0A3D62; --primary-dark:#062A45; --line:#D5DFEA;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.55;
+  }
+  .card{
+    width:100%;max-width:420px;text-align:center;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:36px 28px 32px;
+  }
+  h1{margin:0 0 10px;font-size:1.35rem;font-weight:650;}
+  p{margin:0 0 22px;color:var(--muted);font-size:.98rem;}
+  a.btn{
+    display:inline-block;padding:11px 22px;border-radius:9px;
+    background:var(--primary);color:#fff;text-decoration:none;font-weight:600;
+  }
+  a.btn:hover{background:var(--primary-dark);}
+  a.btn:focus-visible{outline:3px solid #7FB3E0;outline-offset:2px;}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>Halaman ini sudah pindah</h1>
+    <p>Anda akan diarahkan ke alamat baru Scheduling Team. Jika tidak berpindah otomatis, gunakan tombol di bawah.</p>
+    <a class="btn" id="go" href="https://adi-096.github.io/Scheduling-Team/">Buka alamat baru</a>
+  </main>
+<script>
+  // Alihkan ke alamat baru, sambil mempertahankan query (?...) dan hash (#...) bila ada.
+  (function () {
+    var target = "https://adi-096.github.io/Scheduling-Team/" + location.search + location.hash;
+    document.getElementById("go").href = target;
+    location.replace(target);
+  })();
+</script>
+</body>
+</html>
